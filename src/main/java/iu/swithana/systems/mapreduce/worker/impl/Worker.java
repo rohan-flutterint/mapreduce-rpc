@@ -16,7 +16,6 @@ public class Worker extends UnicastRemoteObject implements MapperRMI {
 
     private static Logger logger = LoggerFactory.getLogger(Worker.class);
     private static final long serialVersionUID = 1L;
-    private static Registry registry;
 
     protected Worker() throws RemoteException {
     }
@@ -27,14 +26,7 @@ public class Worker extends UnicastRemoteObject implements MapperRMI {
     }
 
     public static void main(String[] args) {
-
         try {
-            /*String name = "map";
-            MapperRMI mapper = new Worker();
-            MapperRMI stub = (MapperRMI) UnicastRemoteObject.exportObject(mapper, 0);
-            Registry registry = LocateRegistry.getRegistry();
-            registry.rebind(name, stub);*/
-            registry = LocateRegistry.createRegistry(6666);
             Naming.rebind("//localhost:6666/map", new Worker());
             logger.info("Mapper bound");
             logger.info("Server ready");
