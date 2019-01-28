@@ -1,20 +1,22 @@
 package iu.swithana.systems.mapreduce.master;
 
-import iu.swithana.systems.mapreduce.worker.MapperRMI;
+import iu.swithana.systems.mapreduce.master.impl.Master;
+import iu.swithana.systems.mapreduce.worker.WorkerRMI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.rmi.AccessException;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
+import java.net.MalformedURLException;
+import java.rmi.*;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.List;
 
-public class Master {
-    private static Logger logger = LoggerFactory.getLogger(Master.class);
+public class Main {
+    private static Logger logger = LoggerFactory.getLogger(Main.class);
     public static Registry registry;
 
     private static final int REGISTRY_PORT = 6666;
+    private static final String IP = "localhost";
 
     public static void main(String[] args) {
 
@@ -22,24 +24,47 @@ public class Master {
             // Start the registry
             startRegistry(REGISTRY_PORT);
 
+            Master master = new Master(IP, REGISTRY_PORT);
+            Naming.bind("//localhost:6666/master", master);
+            logger.info("Mapper bound");
+            logger.info("Master ready to accept workers");
+
             // spawn the workers
-            Thread.sleep(5000);
+            Thread.sleep(10000);
+
+            String workerName = "";
+            List<String> workers = master.getWorkers();
+            if(!workers.isEmpty()) {
+                workerName = workers.get(0);
+            }
+
+            Thread masterThread = new Thread(master);
+            masterThread.start();
 
             // submit a test job
-            testJob(REGISTRY_PORT);
+            testJob(workerName, REGISTRY_PORT);
+
+
 
         } catch (RemoteException e) {
             logger.error("Error occurred while accessing the registry: "+ e.getMessage(), e);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error("Error occurred while accessing the registry: "+ e.getMessage(), e);
+        } catch (AlreadyBoundException e) {
+            logger.error("Error occurred while binding the master to the registry: "+ e.getMessage(), e);
+        } catch (MalformedURLException e) {
+            logger.error("Error occurred while binding the master to the registry: "+ e.getMessage(), e);
         }
     }
 
-    private static void testJob(int port) {
-        Registry  lookupRegistry= null;
+    private static void testJob(String workerID, int port) {
+        if (workerID == "") {
+            System.out.println("The workerlist is empty!");
+        }
+        Registry  lookupRegistry;
         try {
             lookupRegistry = LocateRegistry.getRegistry(port);
-            MapperRMI mapper = (MapperRMI) lookupRegistry.lookup("map");
+            WorkerRMI mapper = (WorkerRMI) lookupRegistry.lookup(workerID);
             String result = mapper.printMessage("Sachith");
             logger.info("Invoked the worker!");
             logger.info("Result: " + result);

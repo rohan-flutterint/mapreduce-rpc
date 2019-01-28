@@ -1,23 +1,22 @@
 package iu.swithana.systems.mapreduce.worker.impl;
 
-import iu.swithana.systems.mapreduce.worker.MapperRMI;
+import iu.swithana.systems.mapreduce.worker.WorkerRMI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.MalformedURLException;
-import java.rmi.AccessException;
-import java.rmi.Naming;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-public class Worker extends UnicastRemoteObject implements MapperRMI {
+public class Worker extends UnicastRemoteObject implements WorkerRMI {
 
     private static Logger logger = LoggerFactory.getLogger(Worker.class);
     private static final long serialVersionUID = 1L;
 
-    protected Worker() throws RemoteException {
+    private String id;
+
+    public Worker(String id) throws RemoteException {
+        super();
+        this.id = id;
     }
 
     public String printMessage(String name) {
@@ -25,15 +24,7 @@ public class Worker extends UnicastRemoteObject implements MapperRMI {
         return "Hello " + name;
     }
 
-    public static void main(String[] args) {
-        try {
-            Naming.rebind("//localhost:6666/map", new Worker());
-            logger.info("Mapper bound");
-            logger.info("Server ready");
-        } catch (RemoteException e) {
-            logger.error("Error connecting to the remote registry: " + e.getMessage(), e);
-        } catch (MalformedURLException e) {
-            logger.error("Error rebinding the mapper: " + e.getMessage(), e);
-        }
+    public String heartbeat() {
+        return id;
     }
 }
