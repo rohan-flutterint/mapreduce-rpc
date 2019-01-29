@@ -25,7 +25,7 @@ public class Main {
             startRegistry(REGISTRY_PORT);
 
             Master master = new Master(IP, REGISTRY_PORT);
-            Naming.bind("//localhost:6666/master", master);
+            Naming.bind("//"+ IP + ":" + REGISTRY_PORT + "/master", master);
             logger.info("Mapper bound");
             logger.info("Master ready to accept workers");
 

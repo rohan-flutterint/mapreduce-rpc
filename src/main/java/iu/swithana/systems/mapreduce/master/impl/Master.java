@@ -1,21 +1,22 @@
 package iu.swithana.systems.mapreduce.master.impl;
 
+import iu.swithana.systems.mapreduce.core.Context;
+import iu.swithana.systems.mapreduce.master.MapRedRMI;
 import iu.swithana.systems.mapreduce.master.MasterRMI;
 import iu.swithana.systems.mapreduce.worker.WorkerRMI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.InvocationTargetException;
 import java.rmi.AccessException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
-public class Master extends UnicastRemoteObject implements MasterRMI, Runnable {
+public class Master extends UnicastRemoteObject implements MasterRMI, Runnable, MapRedRMI {
     private static final long serialVersionUID = 1L;
     private static Logger logger = LoggerFactory.getLogger(Master.class);
     private List<String> workers;
@@ -93,5 +94,42 @@ public class Master extends UnicastRemoteObject implements MasterRMI, Runnable {
             }
         }
         return stoppedWorkers;
+    }
+
+    public String submitJob(Class mapperClass, Class reducerClass, String inputDirectory) {
+        WorkerRMI worker = getWorker(workers.get(0));
+        Map<String, String> result = new HashMap<String, String>();
+        try {
+            if (worker != null) {
+                Context context = worker.doMap(inputDirectory, mapperClass);
+                for (String key : context.getKeys()) {
+                    Context subContext = context.getSubContext(key, context);
+                    result.put(key, worker.doReduce(key, subContext, reducerClass));
+                }
+                return result.toString();
+            }
+        } catch (RemoteException e) {
+            logger.error("Error accessing Worker: " + e.getMessage(), e);
+        } catch (Exception e) {
+            logger.error("Error accessing the reducer function: " + e.getMessage(), e);
+        }
+        return "Hello Client, got the classes: " + mapperClass.getSimpleName() + "  " + reducerClass.getSimpleName();
+    }
+
+    private WorkerRMI getWorker(String workerID) {
+        Registry  lookupRegistry;
+        WorkerRMI worker = null;
+        try {
+            lookupRegistry = LocateRegistry.getRegistry(port);
+            worker = (WorkerRMI) lookupRegistry.lookup(workerID);
+            logger.info("Invoked the worker!");
+        } catch (AccessException e) {
+            logger.error("Error accessing the registry: " + e.getMessage(), e);
+        } catch (RemoteException e) {
+            logger.error("Error occurred while accessing the registry: "+ e.getMessage(), e);
+        } catch (NotBoundException e) {
+            logger.error("Error occurred while retrieving RPC bind: "+ e.getMessage(), e);
+        }
+        return worker;
     }
 }

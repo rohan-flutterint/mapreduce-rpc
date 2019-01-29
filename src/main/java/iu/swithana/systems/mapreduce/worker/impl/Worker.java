@@ -1,9 +1,15 @@
 package iu.swithana.systems.mapreduce.worker.impl;
 
+import iu.swithana.systems.mapreduce.core.Context;
+import iu.swithana.systems.mapreduce.core.Mapper;
+import iu.swithana.systems.mapreduce.core.Reducer;
 import iu.swithana.systems.mapreduce.worker.WorkerRMI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
@@ -26,5 +32,26 @@ public class Worker extends UnicastRemoteObject implements WorkerRMI {
 
     public String heartbeat() {
         return id;
+    }
+
+    //todo: add logs
+    public Context doMap(String input, Class mapperClass) throws RemoteException, NoSuchMethodException,
+            IllegalAccessException, InvocationTargetException, InstantiationException {
+        Context context = new Context();
+        Constructor constructor = mapperClass.getConstructor();
+        Mapper mapper = (Mapper) constructor.newInstance();
+        mapper.map(input, context);
+        return context;
+    }
+
+    public String doReduce(String key, Context context, Class reducerClass) throws RemoteException,
+            NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        Constructor constructor = reducerClass.getConstructor();
+        Reducer reducer = (Reducer) constructor.newInstance();
+        return reducer.reduce(key, context.getIterator(key));
+    }
+
+    public Context doMap() throws RemoteException {
+        return null;
     }
 }
