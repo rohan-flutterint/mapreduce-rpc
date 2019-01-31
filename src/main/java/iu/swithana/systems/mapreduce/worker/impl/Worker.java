@@ -35,12 +35,12 @@ public class Worker extends UnicastRemoteObject implements WorkerRMI {
     }
 
     //todo: add logs
-    public Context doMap(String input, Class mapperClass) throws RemoteException, NoSuchMethodException,
+    public Context doMap(byte[] content, Class mapperClass) throws RemoteException, NoSuchMethodException,
             IllegalAccessException, InvocationTargetException, InstantiationException {
         Context context = new Context();
         Constructor constructor = mapperClass.getConstructor();
         Mapper mapper = (Mapper) constructor.newInstance();
-        mapper.map(input, context);
+        mapper.map(new String(content), context);
         return context;
     }
 

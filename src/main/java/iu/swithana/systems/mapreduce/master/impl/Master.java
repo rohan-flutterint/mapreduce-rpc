@@ -7,7 +7,8 @@ import iu.swithana.systems.mapreduce.worker.WorkerRMI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.InvocationTargetException;
+import java.io.File;
+import java.nio.file.Files;
 import java.rmi.AccessException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -98,10 +99,11 @@ public class Master extends UnicastRemoteObject implements MasterRMI, Runnable, 
 
     public String submitJob(Class mapperClass, Class reducerClass, String inputDirectory) {
         WorkerRMI worker = getWorker(workers.get(0));
-        Map<String, String> result = new HashMap<String, String>();
+        Map<String, String> result = new HashMap();
         try {
             if (worker != null) {
-                Context context = worker.doMap(inputDirectory, mapperClass);
+                byte[] fileContent = Files.readAllBytes(new File(inputDirectory).toPath());
+                Context context = worker.doMap(fileContent, mapperClass);
                 for (String key : context.getKeys()) {
                     Context subContext = context.getSubContext(key, context);
                     result.put(key, worker.doReduce(key, subContext, reducerClass));

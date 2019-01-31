@@ -12,7 +12,7 @@ public interface WorkerRMI extends Remote {
 
     String heartbeat() throws RemoteException;
 
-    Context doMap(String input, Class mapperClass) throws RemoteException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException;
+    Context doMap(byte[] content, Class mapperClass) throws RemoteException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException;
 
     String doReduce(String key, Context context, Class reducerClass) throws RemoteException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException;
 }

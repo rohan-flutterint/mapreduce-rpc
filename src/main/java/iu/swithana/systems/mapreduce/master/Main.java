@@ -1,10 +1,13 @@
 package iu.swithana.systems.mapreduce.master;
 
+import iu.swithana.systems.mapreduce.config.Config;
+import iu.swithana.systems.mapreduce.config.Constants;
 import iu.swithana.systems.mapreduce.master.impl.Master;
 import iu.swithana.systems.mapreduce.worker.WorkerRMI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.rmi.*;
 import java.rmi.registry.LocateRegistry;
@@ -15,21 +18,26 @@ public class Main {
     private static Logger logger = LoggerFactory.getLogger(Main.class);
     public static Registry registry;
 
-    private static final int REGISTRY_PORT = 6666;
-    private static final String IP = "localhost";
+    private static int REGISTRY_PORT;
+    private static String REGISTRY_HOST;
 
     public static void main(String[] args) {
-
         try {
+            // loading the configs
+            Config config = new Config();
+            REGISTRY_PORT = Integer.parseInt(config.getConfig(Constants.RMI_REGISTRY_PORT));
+            REGISTRY_HOST = config.getConfig(Constants.RMI_REGISTRY_HOST);
+
             // Start the registry
             startRegistry(REGISTRY_PORT);
 
-            Master master = new Master(IP, REGISTRY_PORT);
-            Naming.bind("//"+ IP + ":" + REGISTRY_PORT + "/master", master);
+            // Starting the master
+            Master master = new Master(REGISTRY_HOST, REGISTRY_PORT);
+            Naming.bind("//"+ REGISTRY_HOST + ":" + REGISTRY_PORT + "/master", master);
             logger.info("Mapper bound");
             logger.info("Master ready to accept workers");
 
-            // spawn the workers
+            // waiting for the workers to spawn
             Thread.sleep(10000);
 
             String workerName = "";
@@ -43,9 +51,6 @@ public class Main {
 
             // submit a test job
             testJob(workerName, REGISTRY_PORT);
-
-
-
         } catch (RemoteException e) {
             logger.error("Error occurred while accessing the registry: "+ e.getMessage(), e);
         } catch (InterruptedException e) {
@@ -54,6 +59,8 @@ public class Main {
             logger.error("Error occurred while binding the master to the registry: "+ e.getMessage(), e);
         } catch (MalformedURLException e) {
             logger.error("Error occurred while binding the master to the registry: "+ e.getMessage(), e);
+        } catch (IOException e) {
+            logger.error("Error accessing the configuration file: "+ e.getMessage(), e);
         }
     }
 
