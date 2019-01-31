@@ -17,6 +17,59 @@
                     <target>7</target>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>master</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>iu.swithana.systems.mapreduce.master.Main</mainClass>
+                                </transformer>
+                            </transformers>
+                            <finalName>iu.swithana.mapreduce.master</finalName>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>worker</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>iu.swithana.systems.mapreduce.worker.Main</mainClass>
+                                </transformer>
+                            </transformers>
+                            <finalName>iu.swithana.mapreduce.worker</finalName>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>client</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>iu.swithana.systems.mapreduce.client.WordCount</mainClass>
+                                </transformer>
+                            </transformers>
+                            <finalName>iu.swithana.mapreduce.sample.wordCount</finalName>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 

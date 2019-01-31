@@ -22,9 +22,9 @@ public class Main {
     private static String REGISTRY_HOST;
 
     public static void main(String[] args) {
-
         Registry lookupRegistry;
-        try {// loading the configs
+        try {
+            // loading the configs
             Config config = new Config();
             REGISTRY_PORT = Integer.parseInt(config.getConfig(Constants.RMI_REGISTRY_PORT));
             REGISTRY_HOST = config.getConfig(Constants.RMI_REGISTRY_HOST);
