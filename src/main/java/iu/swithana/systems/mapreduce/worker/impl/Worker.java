@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
@@ -25,13 +24,12 @@ public class Worker extends UnicastRemoteObject implements WorkerRMI {
         this.id = id;
     }
 
-    public String printMessage(String name) {
-        logger.info("Message received from: " + name);
-        return "Hello " + name;
+    public String getWorkerID() {
+        return this.id;
     }
 
     public String heartbeat() {
-        return id;
+        return this.id;
     }
 
     //todo: add logs

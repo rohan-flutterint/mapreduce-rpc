@@ -19,7 +19,9 @@ public class Main {
     public static Registry registry;
 
     private static int REGISTRY_PORT;
+    private static int HEARTBEAT_TIMEOUT;
     private static String REGISTRY_HOST;
+    private static String RMI_MASTER;
 
     public static void main(String[] args) {
         try {
@@ -27,13 +29,15 @@ public class Main {
             Config config = new Config();
             REGISTRY_PORT = Integer.parseInt(config.getConfig(Constants.RMI_REGISTRY_PORT));
             REGISTRY_HOST = config.getConfig(Constants.RMI_REGISTRY_HOST);
+            HEARTBEAT_TIMEOUT = Integer.parseInt(config.getConfig(Constants.HEARTBEAT_TIMEOUT));
+            RMI_MASTER = config.getConfig(Constants.RMI_MASTER);
 
             // Start the registry
             startRegistry(REGISTRY_PORT);
 
             // Starting the master
-            Master master = new Master(REGISTRY_HOST, REGISTRY_PORT);
-            Naming.bind("//"+ REGISTRY_HOST + ":" + REGISTRY_PORT + "/master", master);
+            Master master = new Master(REGISTRY_HOST, REGISTRY_PORT, HEARTBEAT_TIMEOUT);
+            Naming.bind("//"+ REGISTRY_HOST + ":" + REGISTRY_PORT + "/" + RMI_MASTER, master);
             logger.info("Mapper bound");
             logger.info("Master ready to accept workers");
 
@@ -72,7 +76,7 @@ public class Main {
         try {
             lookupRegistry = LocateRegistry.getRegistry(port);
             WorkerRMI mapper = (WorkerRMI) lookupRegistry.lookup(workerID);
-            String result = mapper.printMessage("Sachith");
+            String result = mapper.getWorkerID();
             logger.info("Invoked the worker!");
             logger.info("Result: " + result);
         } catch (AccessException e) {

@@ -3,12 +3,13 @@ package iu.swithana.systems.mapreduce.master.impl;
 import iu.swithana.systems.mapreduce.core.Context;
 import iu.swithana.systems.mapreduce.master.MapRedRMI;
 import iu.swithana.systems.mapreduce.master.MasterRMI;
+import iu.swithana.systems.mapreduce.util.FileManager;
 import iu.swithana.systems.mapreduce.worker.WorkerRMI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.nio.file.Files;
+import java.io.IOException;
 import java.rmi.AccessException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -23,12 +24,14 @@ public class Master extends UnicastRemoteObject implements MasterRMI, Runnable, 
     private List<String> workers;
     private String ip;
     private int port;
+    private int heartbeatTimeout;
 
-    public Master(String ip, int port) throws RemoteException {
+    public Master(String ip, int port, int heartbeatTimeout) throws RemoteException {
         super();
         this.workers = new ArrayList();
         this.ip = ip;
         this.port = port;
+        this.heartbeatTimeout = heartbeatTimeout;
     }
 
     public String registerWorker(String ip, int port, String name) {
@@ -46,7 +49,7 @@ public class Master extends UnicastRemoteObject implements MasterRMI, Runnable, 
     public void run() {
         while (true) {
             try {
-                Thread.sleep(10000);
+                Thread.sleep(heartbeatTimeout);
                 workerMonitor();
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -62,6 +65,7 @@ public class Master extends UnicastRemoteObject implements MasterRMI, Runnable, 
             workers.remove(worker);
         }
     }
+
     /**
      * Detects unresponsive worker nodes.
      * @return a list of unresponsive worker node IDs.
@@ -100,9 +104,11 @@ public class Master extends UnicastRemoteObject implements MasterRMI, Runnable, 
     public String submitJob(Class mapperClass, Class reducerClass, String inputDirectory) {
         WorkerRMI worker = getWorker(workers.get(0));
         Map<String, String> result = new HashMap();
+        FileManager fileManager = new FileManager();
+        File[] filesInDirectory = fileManager.getFilesInDirectory(inputDirectory);
         try {
             if (worker != null) {
-                byte[] fileContent = Files.readAllBytes(new File(inputDirectory).toPath());
+                byte[] fileContent = fileManager.readFile(filesInDirectory[0]);
                 Context context = worker.doMap(fileContent, mapperClass);
                 for (String key : context.getKeys()) {
                     Context subContext = context.getSubContext(key, context);
@@ -112,6 +118,8 @@ public class Master extends UnicastRemoteObject implements MasterRMI, Runnable, 
             }
         } catch (RemoteException e) {
             logger.error("Error accessing Worker: " + e.getMessage(), e);
+        } catch (IOException e) {
+            logger.error("Error accessing input file: " + e.getMessage(), e);
         } catch (Exception e) {
             logger.error("Error accessing the reducer function: " + e.getMessage(), e);
         }

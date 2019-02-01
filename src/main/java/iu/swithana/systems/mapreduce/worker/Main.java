@@ -20,6 +20,7 @@ public class Main {
 
     private static int REGISTRY_PORT;
     private static String REGISTRY_HOST;
+    private static String RMI_MASTER;
 
     public static void main(String[] args) {
         Registry lookupRegistry;
@@ -28,10 +29,11 @@ public class Main {
             Config config = new Config();
             REGISTRY_PORT = Integer.parseInt(config.getConfig(Constants.RMI_REGISTRY_PORT));
             REGISTRY_HOST = config.getConfig(Constants.RMI_REGISTRY_HOST);
+            RMI_MASTER = config.getConfig(Constants.RMI_MASTER);
 
             lookupRegistry = LocateRegistry.getRegistry(REGISTRY_PORT);
-            MasterRMI master = (MasterRMI) lookupRegistry.lookup("master");
-            String workerID = master.registerWorker("localhost", 6666, "worker");
+            MasterRMI master = (MasterRMI) lookupRegistry.lookup(RMI_MASTER);
+            String workerID = master.registerWorker(REGISTRY_HOST, REGISTRY_PORT, "worker");
             logger.info("Registered the worker with the master, received the id: " + workerID);
 
             logger.info("Binding the worker with the registry " + workerID);

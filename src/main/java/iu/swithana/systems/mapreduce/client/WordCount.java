@@ -24,7 +24,6 @@ public class WordCount {
     private static String REGISTRY_HOST;
     private static String MASTER_BIND;
     private static String INPUT_DIR;
-//    private static final String INPUT_DIR = "/Users/swithana/git/mapreduce-rpc/input/WordCountTest.txt";
 
     public static void main(String[] args) {
         Registry lookupRegistry;
