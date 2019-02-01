@@ -1,6 +1,7 @@
 package iu.swithana.systems.mapreduce.worker.impl;
 
-import iu.swithana.systems.mapreduce.core.Context;
+import iu.swithana.systems.mapreduce.core.ResultMap;
+import iu.swithana.systems.mapreduce.core.JobContext;
 import iu.swithana.systems.mapreduce.core.Mapper;
 import iu.swithana.systems.mapreduce.core.Reducer;
 import iu.swithana.systems.mapreduce.worker.WorkerRMI;
@@ -32,21 +33,21 @@ public class Worker extends UnicastRemoteObject implements WorkerRMI {
         return this.id;
     }
 
-    public Context doMap(byte[] content, Class mapperClass) throws RemoteException, NoSuchMethodException,
+    public ResultMap doMap(byte[] content, Class mapperClass, JobContext jobConfigs) throws RemoteException, NoSuchMethodException,
             IllegalAccessException, InvocationTargetException, InstantiationException {
-        Context context = new Context();
+        ResultMap resultMap = new ResultMap();
         Constructor constructor = mapperClass.getConstructor();
         Mapper mapper = (Mapper) constructor.newInstance();
-        mapper.map(new String(content), context);
+        mapper.map(new String(content), resultMap, jobConfigs);
         logger.debug("[" + id + "] Completed a map job");
-        return context;
+        return resultMap;
     }
 
-    public String doReduce(String key, Context context, Class reducerClass) throws RemoteException,
+    public String doReduce(String key, ResultMap resultMap, Class reducerClass) throws RemoteException,
             NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         Constructor constructor = reducerClass.getConstructor();
         Reducer reducer = (Reducer) constructor.newInstance();
         logger.debug("[" + id + "] Completed a reduce job for the key: " + key);
-        return reducer.reduce(key, context.getIterator(key));
+        return reducer.reduce(key, resultMap.getIterator(key));
     }
 }

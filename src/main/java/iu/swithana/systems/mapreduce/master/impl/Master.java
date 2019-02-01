@@ -1,9 +1,9 @@
 package iu.swithana.systems.mapreduce.master.impl;
 
-import iu.swithana.systems.mapreduce.core.Context;
+import iu.swithana.systems.mapreduce.core.ResultMap;
 import iu.swithana.systems.mapreduce.master.MapRedRMI;
 import iu.swithana.systems.mapreduce.master.MasterRMI;
-import iu.swithana.systems.mapreduce.master.core.MapperScheduler;
+import iu.swithana.systems.mapreduce.master.core.MapExecutor;
 import iu.swithana.systems.mapreduce.worker.WorkerRMI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,13 +106,13 @@ public class Master extends UnicastRemoteObject implements MasterRMI, Runnable, 
         registerWorkers();
 
         // schedule the map job
-        MapperScheduler mapperScheduler = new MapperScheduler(mapperClass, inputDirectory, workerTable);
+        MapExecutor mapExecutor = new MapExecutor(mapperClass, inputDirectory, workerTable);
         Map<String, String> result = new HashMap();
         WorkerRMI worker = getWorker(workers.get(0));
         try {
-            Context context = mapperScheduler.runJob();
-            for (String key : context.getKeys()) {
-                Context subContext = context.getSubContext(key, context);
+            ResultMap resultMap = mapExecutor.runJob();
+            for (String key : resultMap.getKeys()) {
+                ResultMap subContext = resultMap.getSubContext(key, resultMap);
                 result.put(key, worker.doReduce(key, subContext, reducerClass));
             }
             return result.toString();

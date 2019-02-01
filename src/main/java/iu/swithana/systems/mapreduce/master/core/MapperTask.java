@@ -1,5 +1,6 @@
 package iu.swithana.systems.mapreduce.master.core;
-import iu.swithana.systems.mapreduce.core.Context;
+import iu.swithana.systems.mapreduce.core.ResultMap;
+import iu.swithana.systems.mapreduce.core.JobContext;
 import iu.swithana.systems.mapreduce.util.FileManager;
 import iu.swithana.systems.mapreduce.worker.WorkerRMI;
 import org.slf4j.Logger;
@@ -30,13 +31,15 @@ public class MapperTask implements Runnable {
     @Override
     public void run() {
         try {
-            Context context = worker.doMap(fileManager.readFile(this.file), mapperClass);
-            resultListener.onResult(context, workerID);
+            JobContext jobContext = new JobContext();
+            jobContext.addConfig("filename", file.getName());
+            ResultMap resultMap = worker.doMap(fileManager.readFile(this.file), mapperClass, jobContext);
+            resultListener.onResult(resultMap, workerID);
         } catch (IOException e) {
             logger.error("Error accessing the file: " + file.getName() + " " + e.getMessage(), e);
         } catch (Exception e) {
             logger.error("Exception occurred in completing the job on worker: " + this.workerID + " " + e.getMessage(), e);
-            resultListener.onError(e, workerID);
+            resultListener.onError(e, workerID, file);
         }
     }
 }

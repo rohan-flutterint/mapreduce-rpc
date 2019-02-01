@@ -16,10 +16,12 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
-public class WordCount {
-    private static Logger logger = LoggerFactory.getLogger(WordCount.class);
+public class InvertedIndex {
+    private static Logger logger = LoggerFactory.getLogger(InvertedIndex.class);
 
     private static int REGISTRY_PORT;
     private static String REGISTRY_HOST;
@@ -39,7 +41,7 @@ public class WordCount {
             lookupRegistry = LocateRegistry.getRegistry(REGISTRY_PORT);
             MapRedRMI mapper = (MapRedRMI) lookupRegistry.lookup(MASTER_BIND);
             logger.info("Invoking the MapReduce Job!");
-            String result = mapper.submitJob(WordMapper.class, WordReducer.class, INPUT_DIR);
+            String result = mapper.submitJob(InvertedIndexMapper.class, InvertedIndexReducer.class, INPUT_DIR);
             logger.info("Result: " + result);
         } catch (AccessException e) {
             logger.error("Error accessing the registry: " + e.getMessage(), e);
@@ -52,27 +54,27 @@ public class WordCount {
         }
     }
 
-    public static class WordMapper implements Mapper {
-        public void map(String input, ResultMap resultMap, JobContext jobContext) {
+    public static class InvertedIndexMapper implements Mapper {
+        public void map(String input, ResultMap resultMap, JobContext context) {
             String[] lines = input.split("\n");
             for (String line : lines) {
                 if (line != null || !line.equals("")) {
                     String[] words = line.replaceAll("[^a-zA-Z0-9]", " ").split(" ");
                     for (String word : words) {
-                        resultMap.write(word, "1");
+                        resultMap.write(word, (String) context.getConfig("filename"));
                     }
                 }
             }
         }
     }
 
-    public static class WordReducer implements Reducer {
+    public static class InvertedIndexReducer implements Reducer {
         public String reduce(String key, Iterator<String> values) {
-            int result = 0;
+            Set<String> results = new HashSet<>();
             while (values.hasNext()) {
-                result += Integer.parseInt(values.next());
+                results.add(values.next());
             }
-            return String.valueOf(result);
+            return String.join(",", results);
         }
     }
 }

@@ -8,16 +8,16 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
-public class Context implements Serializable {
+public class ResultMap implements Serializable {
     private Multimap<String, String> map;
 
-    public Context() {
+    public ResultMap() {
         map = ArrayListMultimap.create();
     }
 
-    public Context(String key, Context context) {
+    public ResultMap(String key, ResultMap resultMap) {
         map = ArrayListMultimap.create();
-        map.putAll(key, context.getValues(key));
+        map.putAll(key, resultMap.getValues(key));
     }
 
     public void write(String key, String value) {
@@ -40,12 +40,12 @@ public class Context implements Serializable {
         return map.keySet();
     }
 
-    public Context getSubContext(String key, Context context) {
-        Context subContext = new Context(key, context);
+    public ResultMap getSubContext(String key, ResultMap resultMap) {
+        ResultMap subContext = new ResultMap(key, resultMap);
         return subContext;
     }
 
-    public void mergeContext(Context context) {
-        this.map.putAll(context.getMap());
+    public void mergeContext(ResultMap resultMap) {
+        this.map.putAll(resultMap.getMap());
     }
 }

@@ -1,6 +1,7 @@
 package iu.swithana.systems.mapreduce.worker;
 
-import iu.swithana.systems.mapreduce.core.Context;
+import iu.swithana.systems.mapreduce.core.ResultMap;
+import iu.swithana.systems.mapreduce.core.JobContext;
 
 import java.lang.reflect.InvocationTargetException;
 import java.rmi.Remote;
@@ -12,7 +13,7 @@ public interface WorkerRMI extends Remote {
 
     String heartbeat() throws RemoteException;
 
-    Context doMap(byte[] content, Class mapperClass) throws RemoteException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException;
+    ResultMap doMap(byte[] content, Class mapperClass, JobContext configs) throws RemoteException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException;
 
-    String doReduce(String key, Context context, Class reducerClass) throws RemoteException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException;
+    String doReduce(String key, ResultMap resultMap, Class reducerClass) throws RemoteException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException;
 }

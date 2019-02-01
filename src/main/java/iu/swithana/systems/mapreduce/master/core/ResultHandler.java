@@ -1,26 +1,26 @@
 package iu.swithana.systems.mapreduce.master.core;
 
-import iu.swithana.systems.mapreduce.core.Context;
+import iu.swithana.systems.mapreduce.core.ResultMap;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ResultHandler {
-    private volatile List<Context> resultsList;
+    private volatile List<ResultMap> resultsList;
 
     public ResultHandler() {
         this.resultsList = new ArrayList<>();
     }
 
-    synchronized public void addResult(Context context) {
-        resultsList.add(context);
+    synchronized public void addResult(ResultMap resultMap) {
+        resultsList.add(resultMap);
     }
 
-    public Context getResultsList() {
-        Context context = new Context();
-        for (Context jobContext : resultsList) {
-            context.mergeContext(jobContext);
+    public ResultMap getResultsList() {
+        ResultMap resultMap = new ResultMap();
+        for (ResultMap jobContext : resultsList) {
+            resultMap.mergeContext(jobContext);
         }
-        return context;
+        return resultMap;
     }
 }
