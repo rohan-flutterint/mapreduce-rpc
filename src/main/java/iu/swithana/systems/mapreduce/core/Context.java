@@ -24,11 +24,8 @@ public class Context implements Serializable {
         map.put(key, value);
     }
 
-    @Override
-    public String toString() {
-        return "Context{" +
-                "results=" + map +
-                '}';
+    public Multimap<String, String> getMap() {
+        return map;
     }
 
     private Collection<String> getValues(String key) {
@@ -46,5 +43,9 @@ public class Context implements Serializable {
     public Context getSubContext(String key, Context context) {
         Context subContext = new Context(key, context);
         return subContext;
+    }
+
+    public void mergeContext(Context context) {
+        this.map.putAll(context.getMap());
     }
 }

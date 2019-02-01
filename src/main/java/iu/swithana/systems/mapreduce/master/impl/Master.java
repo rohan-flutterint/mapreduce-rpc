@@ -3,13 +3,11 @@ package iu.swithana.systems.mapreduce.master.impl;
 import iu.swithana.systems.mapreduce.core.Context;
 import iu.swithana.systems.mapreduce.master.MapRedRMI;
 import iu.swithana.systems.mapreduce.master.MasterRMI;
-import iu.swithana.systems.mapreduce.util.FileManager;
+import iu.swithana.systems.mapreduce.master.core.MapperScheduler;
 import iu.swithana.systems.mapreduce.worker.WorkerRMI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
 import java.rmi.AccessException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -25,6 +23,7 @@ public class Master extends UnicastRemoteObject implements MasterRMI, Runnable, 
     private String ip;
     private int port;
     private int heartbeatTimeout;
+    private Hashtable<String, WorkerRMI> workerTable;
 
     public Master(String ip, int port, int heartbeatTimeout) throws RemoteException {
         super();
@@ -37,8 +36,8 @@ public class Master extends UnicastRemoteObject implements MasterRMI, Runnable, 
     public String registerWorker(String ip, int port, String name) {
         UUID uuid = UUID.randomUUID();
         String id = uuid.toString();
-        workers.add(id);
         logger.info("Registered new worker: " + id);
+        workers.add(id);
         return id;
     }
 
@@ -68,6 +67,7 @@ public class Master extends UnicastRemoteObject implements MasterRMI, Runnable, 
 
     /**
      * Detects unresponsive worker nodes.
+     *
      * @return a list of unresponsive worker node IDs.
      */
     private List<String> testHeatbeat() {
@@ -75,7 +75,7 @@ public class Master extends UnicastRemoteObject implements MasterRMI, Runnable, 
         try {
             lookupRegistry = LocateRegistry.getRegistry(port);
         } catch (RemoteException e) {
-            logger.error("Error occurred while locating the registry: "+ e.getMessage(), e);
+            logger.error("Error occurred while locating the registry: " + e.getMessage(), e);
         }
         if (lookupRegistry == null) {
             logger.error("Heartbeats cannot be checked, the registry is not working!");
@@ -102,32 +102,30 @@ public class Master extends UnicastRemoteObject implements MasterRMI, Runnable, 
     }
 
     public String submitJob(Class mapperClass, Class reducerClass, String inputDirectory) {
-        WorkerRMI worker = getWorker(workers.get(0));
+        // update the list with the workers
+        registerWorkers();
+
+        // schedule the map job
+        MapperScheduler mapperScheduler = new MapperScheduler(mapperClass, inputDirectory, workerTable);
         Map<String, String> result = new HashMap();
-        FileManager fileManager = new FileManager();
-        File[] filesInDirectory = fileManager.getFilesInDirectory(inputDirectory);
+        WorkerRMI worker = getWorker(workers.get(0));
         try {
-            if (worker != null) {
-                byte[] fileContent = fileManager.readFile(filesInDirectory[0]);
-                Context context = worker.doMap(fileContent, mapperClass);
-                for (String key : context.getKeys()) {
-                    Context subContext = context.getSubContext(key, context);
-                    result.put(key, worker.doReduce(key, subContext, reducerClass));
-                }
-                return result.toString();
+            Context context = mapperScheduler.runJob();
+            for (String key : context.getKeys()) {
+                Context subContext = context.getSubContext(key, context);
+                result.put(key, worker.doReduce(key, subContext, reducerClass));
             }
+            return result.toString();
         } catch (RemoteException e) {
             logger.error("Error accessing Worker: " + e.getMessage(), e);
-        } catch (IOException e) {
-            logger.error("Error accessing input file: " + e.getMessage(), e);
         } catch (Exception e) {
             logger.error("Error accessing the reducer function: " + e.getMessage(), e);
         }
-        return "Hello Client, got the classes: " + mapperClass.getSimpleName() + "  " + reducerClass.getSimpleName();
+        return "hello World";
     }
 
     private WorkerRMI getWorker(String workerID) {
-        Registry  lookupRegistry;
+        Registry lookupRegistry;
         WorkerRMI worker = null;
         try {
             lookupRegistry = LocateRegistry.getRegistry(port);
@@ -136,10 +134,25 @@ public class Master extends UnicastRemoteObject implements MasterRMI, Runnable, 
         } catch (AccessException e) {
             logger.error("Error accessing the registry: " + e.getMessage(), e);
         } catch (RemoteException e) {
-            logger.error("Error occurred while accessing the registry: "+ e.getMessage(), e);
+            logger.error("Error occurred while accessing the registry: " + e.getMessage(), e);
         } catch (NotBoundException e) {
-            logger.error("Error occurred while retrieving RPC bind: "+ e.getMessage(), e);
+            logger.error("Error occurred while retrieving RPC bind: " + e.getMessage(), e);
         }
         return worker;
+    }
+
+    private void registerWorkers() {
+        workerTable = new Hashtable<>();
+        Registry lookupRegistry;
+        for (String workerID : workers) {
+            try {
+                lookupRegistry = LocateRegistry.getRegistry(port);
+                workerTable.put(workerID, (WorkerRMI) lookupRegistry.lookup(workerID));
+            } catch (RemoteException e) {
+                logger.error("Error accessing Worker: " + e.getMessage(), e);
+            } catch (NotBoundException e) {
+                logger.error("Cannot register worker: " + workerID + "  " + e.getMessage(), e);
+            }
+        }
     }
 }

@@ -24,3 +24,7 @@ java -jar iu.swithana.mapreduce.worker.jar
 ```
 java -jar iu.swithana.mapreduce.sample.wordCount.jar
 ```
+
+### Todo
+- The remote map operation is a blocking call. Should be changed to async call and get a call back once the
+ Mapper has finished the task

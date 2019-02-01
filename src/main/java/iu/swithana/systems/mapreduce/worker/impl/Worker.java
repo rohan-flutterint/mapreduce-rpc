@@ -32,13 +32,13 @@ public class Worker extends UnicastRemoteObject implements WorkerRMI {
         return this.id;
     }
 
-    //todo: add logs
     public Context doMap(byte[] content, Class mapperClass) throws RemoteException, NoSuchMethodException,
             IllegalAccessException, InvocationTargetException, InstantiationException {
         Context context = new Context();
         Constructor constructor = mapperClass.getConstructor();
         Mapper mapper = (Mapper) constructor.newInstance();
         mapper.map(new String(content), context);
+        logger.debug("[" + id + "] Completed a map job");
         return context;
     }
 
@@ -46,10 +46,7 @@ public class Worker extends UnicastRemoteObject implements WorkerRMI {
             NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         Constructor constructor = reducerClass.getConstructor();
         Reducer reducer = (Reducer) constructor.newInstance();
+        logger.debug("[" + id + "] Completed a reduce job for the key: " + key);
         return reducer.reduce(key, context.getIterator(key));
-    }
-
-    public Context doMap() throws RemoteException {
-        return null;
     }
 }
