@@ -1,4 +1,4 @@
-#### How to run
+### How to run
 - Run ```maven package``` on the root source directory
 - The jar files for the master, worker and clients will be created in the ./target directory
 - All the jar files accepts optional property files as
