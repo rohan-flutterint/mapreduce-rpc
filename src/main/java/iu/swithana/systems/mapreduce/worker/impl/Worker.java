@@ -1,9 +1,9 @@
 package iu.swithana.systems.mapreduce.worker.impl;
 
-import iu.swithana.systems.mapreduce.core.ResultMap;
-import iu.swithana.systems.mapreduce.core.JobContext;
-import iu.swithana.systems.mapreduce.core.Mapper;
-import iu.swithana.systems.mapreduce.core.Reducer;
+import iu.swithana.systems.mapreduce.common.ResultMap;
+import iu.swithana.systems.mapreduce.common.JobContext;
+import iu.swithana.systems.mapreduce.common.Mapper;
+import iu.swithana.systems.mapreduce.common.Reducer;
 import iu.swithana.systems.mapreduce.worker.WorkerRMI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

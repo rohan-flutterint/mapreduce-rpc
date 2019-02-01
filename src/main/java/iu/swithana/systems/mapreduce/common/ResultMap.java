@@ -1,4 +1,4 @@
-package iu.swithana.systems.mapreduce.core;
+package iu.swithana.systems.mapreduce.common;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
@@ -40,7 +40,7 @@ public class ResultMap implements Serializable {
         return map.keySet();
     }
 
-    public ResultMap getSubContext(String key, ResultMap resultMap) {
+    synchronized public ResultMap getSubMap(String key, ResultMap resultMap) {
         ResultMap subContext = new ResultMap(key, resultMap);
         return subContext;
     }

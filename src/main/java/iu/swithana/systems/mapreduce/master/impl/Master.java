@@ -1,9 +1,10 @@
 package iu.swithana.systems.mapreduce.master.impl;
 
-import iu.swithana.systems.mapreduce.core.ResultMap;
+import iu.swithana.systems.mapreduce.common.ResultMap;
 import iu.swithana.systems.mapreduce.master.MapRedRMI;
 import iu.swithana.systems.mapreduce.master.MasterRMI;
 import iu.swithana.systems.mapreduce.master.core.MapExecutor;
+import iu.swithana.systems.mapreduce.master.core.ReducerExecutor;
 import iu.swithana.systems.mapreduce.worker.WorkerRMI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,17 +112,13 @@ public class Master extends UnicastRemoteObject implements MasterRMI, Runnable, 
         WorkerRMI worker = getWorker(workers.get(0));
         try {
             ResultMap resultMap = mapExecutor.runJob();
-            for (String key : resultMap.getKeys()) {
-                ResultMap subContext = resultMap.getSubContext(key, resultMap);
-                result.put(key, worker.doReduce(key, subContext, reducerClass));
-            }
+            ReducerExecutor reducerExecutor = new ReducerExecutor(resultMap, workerTable, reducerClass);
+            result = reducerExecutor.runJob();
             return result.toString();
-        } catch (RemoteException e) {
-            logger.error("Error accessing Worker: " + e.getMessage(), e);
         } catch (Exception e) {
-            logger.error("Error accessing the reducer function: " + e.getMessage(), e);
+            logger.error("Error running the MapReduce job: " + e.getMessage(), e);
         }
-        return "hello World";
+        return "Job failed!, Please resubmit the job.";
     }
 
     private WorkerRMI getWorker(String workerID) {

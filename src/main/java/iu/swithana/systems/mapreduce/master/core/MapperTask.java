@@ -1,6 +1,6 @@
 package iu.swithana.systems.mapreduce.master.core;
-import iu.swithana.systems.mapreduce.core.ResultMap;
-import iu.swithana.systems.mapreduce.core.JobContext;
+import iu.swithana.systems.mapreduce.common.ResultMap;
+import iu.swithana.systems.mapreduce.common.JobContext;
 import iu.swithana.systems.mapreduce.util.FileManager;
 import iu.swithana.systems.mapreduce.worker.WorkerRMI;
 import org.slf4j.Logger;
@@ -16,16 +16,16 @@ public class MapperTask implements Runnable {
     private FileManager fileManager;
     private Class mapperClass;
     private String workerID;
-    private ResultListner resultListener;
+    private MapResultListener mapResultListener;
 
     public MapperTask(File file, WorkerRMI worker, Class mapperClass, FileManager fileManager, String workerID,
-                      ResultListner resultListener) {
+                      MapResultListener mapResultListener) {
         this.file = file;
         this.worker = worker;
         this.fileManager = fileManager;
         this.mapperClass = mapperClass;
         this.workerID = workerID;
-        this.resultListener = resultListener;
+        this.mapResultListener = mapResultListener;
     }
 
     @Override
@@ -34,12 +34,12 @@ public class MapperTask implements Runnable {
             JobContext jobContext = new JobContext();
             jobContext.addConfig("filename", file.getName());
             ResultMap resultMap = worker.doMap(fileManager.readFile(this.file), mapperClass, jobContext);
-            resultListener.onResult(resultMap, workerID);
+            mapResultListener.onResult(resultMap, workerID);
         } catch (IOException e) {
             logger.error("Error accessing the file: " + file.getName() + " " + e.getMessage(), e);
         } catch (Exception e) {
             logger.error("Exception occurred in completing the job on worker: " + this.workerID + " " + e.getMessage(), e);
-            resultListener.onError(e, workerID, file);
+            mapResultListener.onError(e, workerID, file);
         }
     }
 }

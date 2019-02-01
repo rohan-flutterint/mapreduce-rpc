@@ -1,14 +1,14 @@
 package iu.swithana.systems.mapreduce.master.core;
 
-import iu.swithana.systems.mapreduce.core.ResultMap;
+import iu.swithana.systems.mapreduce.common.ResultMap;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ResultHandler {
+public class MapResultsHandler {
     private volatile List<ResultMap> resultsList;
 
-    public ResultHandler() {
+    public MapResultsHandler() {
         this.resultsList = new ArrayList<>();
     }
 

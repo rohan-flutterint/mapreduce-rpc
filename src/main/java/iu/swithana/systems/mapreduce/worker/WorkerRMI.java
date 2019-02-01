@@ -1,7 +1,7 @@
 package iu.swithana.systems.mapreduce.worker;
 
-import iu.swithana.systems.mapreduce.core.ResultMap;
-import iu.swithana.systems.mapreduce.core.JobContext;
+import iu.swithana.systems.mapreduce.common.ResultMap;
+import iu.swithana.systems.mapreduce.common.JobContext;
 
 import java.lang.reflect.InvocationTargetException;
 import java.rmi.Remote;

@@ -1,4 +1,4 @@
-package iu.swithana.systems.mapreduce.core;
+package iu.swithana.systems.mapreduce.common;
 
 import java.io.Serializable;
 import java.util.Hashtable;

@@ -1,19 +1,21 @@
 package iu.swithana.systems.mapreduce.master.core;
 
-import iu.swithana.systems.mapreduce.core.ResultMap;
+import iu.swithana.systems.mapreduce.common.ResultMap;
 import iu.swithana.systems.mapreduce.util.FileManager;
 import iu.swithana.systems.mapreduce.worker.WorkerRMI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.concurrent.*;
 
+/**
+ * This class executes all the Map tasks and supports fault tolerance in the process.
+ */
 public class MapExecutor {
     private static Logger logger = LoggerFactory.getLogger(MapExecutor.class);
 
@@ -37,7 +39,7 @@ public class MapExecutor {
         // prepare the input files list
         FileManager fileManager = new FileManager();
         fileList.addAll(fileManager.getFilesInDirectory(inputDirectory));
-        final ResultHandler resultHandler = new ResultHandler();
+        final MapResultsHandler mapResultsHandler = new MapResultsHandler();
 
         // add all the workers to the idle queue
         for (String workerID : workerTable.keySet()) {
@@ -53,36 +55,34 @@ public class MapExecutor {
                     final String workerID = idleWorkers.take();
                     WorkerRMI worker = workerTable.get(workerID);
                     logger.debug("Submitting file " + file.getName() + " to worker: " + workerID);
-                    executor.submit(new MapperTask(file, worker, mapperClass, fileManager,
-                            worker.getWorkerID(), new ResultListner() {
-                            // in case of successful execution, save the result
-                            @Override
-                            public void onResult(ResultMap resultMap, String workerID) {
-                                resultHandler.addResult(resultMap);
-                                idleWorkers.add(workerID);
-                            }
+                    executor.submit(new MapperTask(file, worker, mapperClass, fileManager, workerID,
+                            new MapResultListener() {
+                                // in case of successful execution, save the result
+                                @Override
+                                public void onResult(ResultMap resultMap, String workerID) {
+                                    mapResultsHandler.addResult(resultMap);
+                                    idleWorkers.add(workerID);
+                                }
 
-                            // if the execution fails, retry for the same file
-                            @Override
-                            public void onError(Exception e, String workerID, File file) {
-                                logger.error("Error accessing Worker: " + workerID +
-                                        ". Assuming it's inaccessible and dropping the worker. " + e.getMessage(), e);
-                                logger.error("Adding file: " + file.getName() + " to the fileList.");
-                                addToRetryList(file);
-                            }
-                        }));
+                                // if the execution fails, retry for the same file
+                                @Override
+                                public void onError(Exception e, String workerID, File file) {
+                                    logger.error("Error accessing Worker: " + workerID +
+                                            ". Assuming it's inaccessible and dropping the worker. " + e.getMessage(), e);
+                                    logger.error("Adding file: " + file.getName() + " to the fileList.");
+                                    addToRetryList(file);
+                                }
+                            }));
                 }
             }
             // wait till all the threads have been completed, then cleanup.
             executor.shutdown();
             executor.awaitTermination(10, TimeUnit.MINUTES);
 
-        } catch (RemoteException e) {
-            logger.error("Error accessing Worker: " + e.getMessage(), e);
         } catch (Exception e) {
             logger.error("Error accessing the mapper function: " + e.getMessage(), e);
         }
-        return resultHandler.getResultsList();
+        return mapResultsHandler.getResultsList();
     }
 
     synchronized private void addToRetryList(File file) {
