@@ -59,7 +59,7 @@ public class ReducerExecutor {
                         break;
                     } else {
                         // tasks are running
-                        Thread.sleep(5000);
+                        Thread.sleep(1000);
                         continue;
                     }
                 }
@@ -78,8 +78,8 @@ public class ReducerExecutor {
                             @Override
                             public void onResult(Map<String, String> result, String workerID) {
                                 resultsHandler.addResult(result);
-                                idleWorkers.add(workerID);
                                 inProgressWorkers.remove(workerID);
+                                idleWorkers.add(workerID);
                             }
                             @Override
                             public void onError(Exception e, String workerID, Set<String> keyset) {

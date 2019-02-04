@@ -36,7 +36,7 @@ public class WordCountTest extends WordCount {
                     }
             );
         }
-        Assert.assertEquals("45", actual[0]);
+        Assert.assertEquals("61", actual[0]);
     }
 
 }
