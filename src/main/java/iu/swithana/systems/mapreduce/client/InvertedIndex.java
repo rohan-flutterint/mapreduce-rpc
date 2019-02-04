@@ -27,6 +27,7 @@ public class InvertedIndex {
     private static String REGISTRY_HOST;
     private static String MASTER_BIND;
     private static String INPUT_DIR;
+    private static String OUTPUT_DIR;
 
     public static void main(String[] args) {
         Registry lookupRegistry;
@@ -37,11 +38,12 @@ public class InvertedIndex {
             REGISTRY_HOST = config.getConfig(Constants.RMI_REGISTRY_HOST);
             MASTER_BIND = config.getConfig(Constants.MASTER_BIND);
             INPUT_DIR = config.getConfig(Constants.INPUT_DIR);
+            OUTPUT_DIR = config.getConfig(Constants.OUTPUT_DIR);
 
             lookupRegistry = LocateRegistry.getRegistry(REGISTRY_PORT);
             MapRedRMI mapper = (MapRedRMI) lookupRegistry.lookup(MASTER_BIND);
             logger.info("Invoking the MapReduce Job!");
-            String result = mapper.submitJob(InvertedIndexMapper.class, InvertedIndexReducer.class, INPUT_DIR);
+            String result = mapper.submitJob(InvertedIndexMapper.class, InvertedIndexReducer.class, INPUT_DIR, OUTPUT_DIR);
             logger.info("Result: " + result);
         } catch (AccessException e) {
             logger.error("Error accessing the registry: " + e.getMessage(), e);

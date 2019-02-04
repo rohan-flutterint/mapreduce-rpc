@@ -1,5 +1,6 @@
 package iu.swithana.systems.mapreduce.master.impl;
 
+import com.google.common.io.Files;
 import iu.swithana.systems.mapreduce.common.ResultMap;
 import iu.swithana.systems.mapreduce.master.MapRedRMI;
 import iu.swithana.systems.mapreduce.master.MasterRMI;
@@ -9,12 +10,15 @@ import iu.swithana.systems.mapreduce.worker.WorkerRMI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.nio.file.Paths;
 import java.rmi.AccessException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class Master extends UnicastRemoteObject implements MasterRMI, Runnable, MapRedRMI {
@@ -102,19 +106,28 @@ public class Master extends UnicastRemoteObject implements MasterRMI, Runnable, 
         return stoppedWorkers;
     }
 
-    public String submitJob(Class mapperClass, Class reducerClass, String inputDirectory) {
+    public String submitJob(Class mapperClass, Class reducerClass, String inputDirectory, String outputDirectory) {
         // update the list with the workers
         registerWorkers();
+        // create jobID
+        String dateID = new SimpleDateFormat("yyyyMMddHHmm'.txt'").format(new Date());
+        String outputFilePath = outputDirectory + File.separator + "app_" + dateID + File.separator + "output";
 
         // schedule the map job
         MapExecutor mapExecutor = new MapExecutor(mapperClass, inputDirectory, workerTable);
-        Map<String, String> result = new HashMap();
-        WorkerRMI worker = getWorker(workers.get(0));
+        final Map<String, String> result;
         try {
             ResultMap resultMap = mapExecutor.runJob();
             ReducerExecutor reducerExecutor = new ReducerExecutor(resultMap, workerTable, reducerClass);
             result = reducerExecutor.runJob();
-            return result.toString();
+
+            // create output directory and write the file
+            Files.createParentDirs(new File(outputFilePath));
+            java.nio.file.Files.write(Paths.get(outputFilePath), () -> result.entrySet().stream()
+                    .<CharSequence>map(e -> e.getKey() + "=" + e.getValue())
+                    .iterator());
+
+            return "The MapReduce job successful! The results are at: " + outputFilePath;
         } catch (Exception e) {
             logger.error("Error running the MapReduce job: " + e.getMessage(), e);
         }
