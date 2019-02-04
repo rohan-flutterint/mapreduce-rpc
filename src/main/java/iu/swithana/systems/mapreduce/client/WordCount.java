@@ -28,6 +28,11 @@ public class WordCount {
     private static String OUTPUT_DIR;
 
     public static void main(String[] args) {
+        runWordCountProgram();
+    }
+
+    protected static String runWordCountProgram() {
+        String result = "";
         Registry lookupRegistry;
         try {
             // loading the configs
@@ -41,7 +46,7 @@ public class WordCount {
             lookupRegistry = LocateRegistry.getRegistry(REGISTRY_PORT);
             MapRedRMI mapper = (MapRedRMI) lookupRegistry.lookup(MASTER_BIND);
             logger.info("Invoking the MapReduce Job!");
-            String result = mapper.submitJob(WordMapper.class, WordReducer.class, INPUT_DIR, OUTPUT_DIR);
+            result = mapper.submitJob(WordMapper.class, WordReducer.class, INPUT_DIR, OUTPUT_DIR);
             logger.info("Result: " + result);
         } catch (AccessException e) {
             logger.error("Error accessing the registry: " + e.getMessage(), e);
@@ -52,6 +57,7 @@ public class WordCount {
         } catch (IOException e) {
             logger.error("Error accessing the configuration file: "+ e.getMessage(), e);
         }
+        return result;
     }
 
     public static class WordMapper implements Mapper {

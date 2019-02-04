@@ -129,7 +129,7 @@ public class Master extends UnicastRemoteObject implements MasterRMI, Runnable, 
                     .<CharSequence>map(e -> e.getKey() + "=" + e.getValue())
                     .iterator());
 
-            return "The MapReduce job successful! The results are at: " + outputFilePath;
+            return "The MapReduce job successful! The results are at: [" + outputFilePath + "]";
         } catch (Exception e) {
             logger.error("Error running the MapReduce job: " + e.getMessage(), e);
         }
