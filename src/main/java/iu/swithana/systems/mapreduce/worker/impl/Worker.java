@@ -12,6 +12,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Worker extends UnicastRemoteObject implements WorkerRMI {
 
@@ -43,11 +45,15 @@ public class Worker extends UnicastRemoteObject implements WorkerRMI {
         return resultMap;
     }
 
-    public String doReduce(String key, ResultMap resultMap, Class reducerClass) throws RemoteException,
+    public Map<String, String> doReduce(ResultMap resultMap, Class reducerClass) throws RemoteException,
             NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         Constructor constructor = reducerClass.getConstructor();
         Reducer reducer = (Reducer) constructor.newInstance();
-        logger.debug("[" + id + "] Completed a reduce job for the key: " + key);
-        return reducer.reduce(key, resultMap.getIterator(key));
+        Map<String, String> results = new HashMap<>();
+        for (String key : resultMap.getKeys()) {
+            results.put(key, reducer.reduce(key, resultMap.getIterator(key)));
+        }
+        logger.debug("[" + id + "] Completed a reduce job for the keys: " + resultMap.getKeys());
+        return results;
     }
 }

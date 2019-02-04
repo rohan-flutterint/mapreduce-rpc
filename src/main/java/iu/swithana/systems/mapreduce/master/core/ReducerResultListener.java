@@ -1,7 +1,10 @@
 package iu.swithana.systems.mapreduce.master.core;
 
-public interface ReducerResultListener {
-    void onResult(String result, String key, String workerID);
+import java.util.Map;
+import java.util.Set;
 
-    void onError(Exception e, String workerID, String key);
+public interface ReducerResultListener {
+    void onResult(Map<String, String> result, String workerID);
+
+    void onError(Exception e, String workerID, Set<String> keyset);
 }

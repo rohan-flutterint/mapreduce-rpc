@@ -1,3 +1,7 @@
+### Pre-requisites
+- Java 8
+- Maven 3
+
 ### How to run
 - All the jar files accepts optional property files as
 ``` -Dconfig.file=<config.properties>```. By default, it uses the bundled property file (resources/config.properties).
@@ -27,7 +31,12 @@ java -jar iu.swithana.mapreduce.sample.wordCount.jar
 ```
 
 ### Todo
+- Fault tolerance
 - Partitioning of the key set of the map output
 - iterative Map Reduce
 - The remote map operation is a blocking call. Should be changed to async call and get a call back once the
  Mapper has finished the task
+ 
+#### Notes
+- partitioning does not copy the keys, it's a view on the actual keyset using Guava
+- ordered final result through treemap

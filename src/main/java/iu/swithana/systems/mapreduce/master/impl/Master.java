@@ -28,14 +28,16 @@ public class Master extends UnicastRemoteObject implements MasterRMI, Runnable, 
     private String ip;
     private int port;
     private int heartbeatTimeout;
+    private int partitionSize;
     private Hashtable<String, WorkerRMI> workerTable;
 
-    public Master(String ip, int port, int heartbeatTimeout) throws RemoteException {
+    public Master(String ip, int port, int heartbeatTimeout, int partitionSize) throws RemoteException {
         super();
         this.workers = new ArrayList();
         this.ip = ip;
         this.port = port;
         this.heartbeatTimeout = heartbeatTimeout;
+        this.partitionSize = partitionSize;
     }
 
     public String registerWorker(String ip, int port, String name) {
@@ -118,7 +120,7 @@ public class Master extends UnicastRemoteObject implements MasterRMI, Runnable, 
         final Map<String, String> result;
         try {
             ResultMap resultMap = mapExecutor.runJob();
-            ReducerExecutor reducerExecutor = new ReducerExecutor(resultMap, workerTable, reducerClass);
+            ReducerExecutor reducerExecutor = new ReducerExecutor(resultMap, workerTable, reducerClass, partitionSize);
             result = reducerExecutor.runJob();
 
             // create output directory and write the file

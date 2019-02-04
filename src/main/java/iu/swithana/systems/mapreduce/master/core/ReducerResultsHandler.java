@@ -13,6 +13,10 @@ public class ReducerResultsHandler {
         results.put(key, value);
     }
 
+    synchronized public void addResult(Map<String, String> result) {
+        results.putAll(result);
+    }
+
     public Map<String, String> getAllResults() {
         return results;
     }

@@ -9,4 +9,5 @@ public class Constants {
     public static final String OUTPUT_DIR = "OUTPUT_DIR";
     public static final String HEARTBEAT_TIMEOUT = "HEARTBEAT_TIMEOUT";
     public static final String RMI_MASTER = "RMI_MASTER";
+    public static final String REDUCER_PARTITIONS_KEY_SIZE = "REDUCER_PARTITIONS_KEY_SIZE";
 }

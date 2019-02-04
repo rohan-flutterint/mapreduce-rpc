@@ -6,6 +6,7 @@ import iu.swithana.systems.mapreduce.common.JobContext;
 import java.lang.reflect.InvocationTargetException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.Map;
 
 public interface WorkerRMI extends Remote {
 
@@ -15,5 +16,5 @@ public interface WorkerRMI extends Remote {
 
     ResultMap doMap(byte[] content, Class mapperClass, JobContext configs) throws RemoteException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException;
 
-    String doReduce(String key, ResultMap resultMap, Class reducerClass) throws RemoteException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException;
+    Map<String, String> doReduce(ResultMap resultMap, Class reducerClass) throws RemoteException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException;
 }

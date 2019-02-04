@@ -5,19 +5,19 @@ import iu.swithana.systems.mapreduce.worker.WorkerRMI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
+
 public class ReducerTask implements Runnable {
     private static Logger logger = LoggerFactory.getLogger(ReducerTask.class);
 
-    private String key;
     private ResultMap subMap;
     private Class reducerClass;
     private WorkerRMI worker;
     private String workerID;
     private ReducerResultListener reducerResultListener;
 
-    public ReducerTask(String key, ResultMap subMap, Class reducerClass, WorkerRMI worker, String workerID,
+    public ReducerTask(ResultMap subMap, Class reducerClass, WorkerRMI worker, String workerID,
                        ReducerResultListener reducerResultListener) {
-        this.key = key;
         this.subMap = subMap;
         this.reducerClass = reducerClass;
         this.worker = worker;
@@ -28,12 +28,12 @@ public class ReducerTask implements Runnable {
     @Override
     public void run() {
         try {
-            String result = worker.doReduce(key, subMap, reducerClass);
-            reducerResultListener.onResult(result, key, workerID);
+            Map<String, String> resultMap = worker.doReduce(subMap, reducerClass);
+            reducerResultListener.onResult(resultMap, workerID);
         } catch (Exception e) {
             logger.error("Exception occurred in completing the reducer the job on worker: " + this.workerID + " " +
                     e.getMessage(), e);
-            reducerResultListener.onError(e, workerID, key);
+            reducerResultListener.onError(e, workerID, subMap.getKeys());
         }
     }
 }
