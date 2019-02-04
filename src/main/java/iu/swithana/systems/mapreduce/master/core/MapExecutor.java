@@ -89,7 +89,7 @@ public class MapExecutor {
                                 public void onError(Exception e, String workerID, File file) {
                                     logger.error("Error accessing Worker: " + workerID +
                                             ". Assuming it's inaccessible and dropping the worker. " + e.getMessage(), e);
-                                    logger.error("Adding file: " + file.getName() + " to the fileList.");
+                                    logger.error("Adding file: " + file.getName() + " to the task queue again.");
                                     fileQueue.add(file);
                                     inProgressWorkers.remove(workerID);
                                 }
