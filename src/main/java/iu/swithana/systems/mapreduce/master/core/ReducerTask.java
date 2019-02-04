@@ -28,6 +28,7 @@ public class ReducerTask implements Runnable {
     @Override
     public void run() {
         try {
+            Thread.sleep(5000);
             Map<String, String> resultMap = worker.doReduce(subMap, reducerClass);
             reducerResultListener.onResult(resultMap, workerID);
         } catch (Exception e) {

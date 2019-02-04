@@ -110,11 +110,15 @@ public class Master extends UnicastRemoteObject implements MasterRMI, Runnable, 
 
     public String submitJob(Class mapperClass, Class reducerClass, String inputDirectory, String outputDirectory) {
         // update the list with the workers
-        registerWorkers();
+        int registerWorkers = registerWorkers();
         // create jobID
         String dateID = new SimpleDateFormat("yyyyMMddHHmm'.txt'").format(new Date());
         String outputFilePath = outputDirectory + File.separator + "app_" + dateID + File.separator + "output";
 
+        // no registered workers available
+        if (registerWorkers < 1) {
+            return "No workers are available. Please start a worker before submitting a mapreduce job";
+        }
         // schedule the map job
         MapExecutor mapExecutor = new MapExecutor(mapperClass, inputDirectory, workerTable);
         final Map<String, String> result;
@@ -153,7 +157,7 @@ public class Master extends UnicastRemoteObject implements MasterRMI, Runnable, 
         return worker;
     }
 
-    private void registerWorkers() {
+    private int registerWorkers() {
         workerTable = new Hashtable<>();
         Registry lookupRegistry;
         for (String workerID : workers) {
@@ -166,5 +170,6 @@ public class Master extends UnicastRemoteObject implements MasterRMI, Runnable, 
                 logger.error("Cannot register worker: " + workerID + "  " + e.getMessage(), e);
             }
         }
+        return workerTable.keySet().size();
     }
 }
