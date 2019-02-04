@@ -6,7 +6,7 @@
 - All the jar files accepts optional property files as
 ``` -Dconfig.file=<config.properties>```. By default, it uses the bundled property file (resources/config.properties).
 You can change any of the two ways to provide the property files. 
-- Run ```maven package -DskipTests``` on the root source directory
+- Run ```mvn clean package ``` on the root source directory
 - The jar files for the master, worker and clients will be created in the ./target directory
 
 
@@ -32,6 +32,7 @@ java -jar iu.swithana.mapreduce.sample.wordCount.jar
 
 ### Todo
 - iterative Map Reduce
+- Add support for stragglers
 
 #### Notes
 - partitioning does not copy the keys, it's a view on the actual keyset using Guava
