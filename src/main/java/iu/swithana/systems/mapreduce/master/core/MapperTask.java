@@ -34,7 +34,7 @@ public class MapperTask implements Runnable {
             JobContext jobContext = new JobContext();
             jobContext.addConfig("filename", file.getName());
             ResultMap resultMap = worker.doMap(fileManager.readFile(this.file), mapperClass, jobContext);
-            mapResultListener.onResult(resultMap, workerID);
+            mapResultListener.onResult(resultMap, workerID, file);
         } catch (IOException e) {
             logger.error("Error accessing the file: " + file.getName() + " " + e.getMessage(), e);
         } catch (Exception e) {

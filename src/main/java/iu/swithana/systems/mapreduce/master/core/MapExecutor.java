@@ -23,6 +23,9 @@ public class MapExecutor {
     private BlockingQueue<File> fileQueue;
     private Map<String, String> inProgressWorkers;
     private int numbeOfWorkers;
+    private Set<File> completedTasks;
+    private Set<File> inProgressTasks;
+    private int totalTasks;
 
     public MapExecutor(Class mapperClass, String inputDirectory, Hashtable<String, WorkerRMI> workerTable) {
         this.workerTable = workerTable;
@@ -31,6 +34,8 @@ public class MapExecutor {
         this.idleWorkers = new ArrayBlockingQueue<>(workerTable.keySet().size());
         this.numbeOfWorkers = workerTable.keySet().size();
         this.inProgressWorkers = new Hashtable<>();
+        this.completedTasks = Collections.synchronizedSet(new HashSet<>());
+        this.inProgressTasks = Collections.synchronizedSet(new HashSet<>());
     }
 
     public ResultMap runJob() {
@@ -39,6 +44,7 @@ public class MapExecutor {
         List<File> filesInDirectory = fileManager.getFilesInDirectory(inputDirectory);
         fileQueue = new ArrayBlockingQueue<>(filesInDirectory.size());
         fileQueue.addAll(filesInDirectory);
+        totalTasks = fileQueue.size();
 
         final MapResultsHandler mapResultsHandler = new MapResultsHandler();
 
@@ -61,7 +67,11 @@ public class MapExecutor {
                         // all the tasks are done
                         break;
                     } else {
-                        // tasks are running, wait to check if any tasks fail
+                        // straggler prevention
+                        if (!areAllTasksDone() && getTaskProgress() > 95) {
+                            fileQueue.addAll(getInProgressTasks());
+                        }
+                        // if tasks are running wait until they finish to retry if one fails
                         Thread.sleep(1000);
                         continue;
                     }
@@ -69,19 +79,27 @@ public class MapExecutor {
                 File file = fileQueue.take();
                 // if it's a directory, skip
                 if (file.isFile()) {
+                    // if it's already been completed, continue
+                    if (alreadyCompleted(file)) {
+                        continue;
+                    }
+
                     // blocks on the idle queue, waits for an available worker
                     final String workerID = idleWorkers.take();
                     WorkerRMI worker = workerTable.get(workerID);
                     logger.debug("Submitting file " + file.getName() + " to worker: " + workerID);
                     inProgressWorkers.put(workerID, file.getName());
+                    addInProgressTask(file);
                     executor.submit(new MapperTask(file, worker, mapperClass, fileManager, workerID,
                             new MapResultListener() {
                                 // in case of successful execution, save the result
                                 @Override
-                                public void onResult(ResultMap resultMap, String workerID) {
+                                public void onResult(ResultMap resultMap, String workerID, File file) {
                                     mapResultsHandler.addResult(resultMap);
                                     inProgressWorkers.remove(workerID);
                                     idleWorkers.add(workerID);
+                                    addCompletedTask(file);
+                                    removeInProgressTask(file);
                                 }
 
                                 // if the execution fails, retry for the same file
@@ -104,5 +122,39 @@ public class MapExecutor {
             logger.error("Error accessing the mapper function: " + e.getMessage(), e);
         }
         return mapResultsHandler.getResultsList();
+    }
+
+    synchronized private void addCompletedTask(File file) {
+        if (!alreadyCompleted(file)) {
+            completedTasks.add(file);
+        }
+    }
+
+    synchronized private void addInProgressTask(File file) {
+        inProgressTasks.add(file);
+    }
+
+    synchronized private void removeInProgressTask(File file) {
+        inProgressTasks.remove(file);
+    }
+
+    synchronized private Set<File> getInProgressTasks() {
+        return inProgressTasks;
+    }
+
+    synchronized private boolean alreadyCompleted(File file) {
+        return completedTasks.contains(file);
+    }
+
+    synchronized private int getNumberOfCompletedTasks() {
+        return completedTasks.size();
+    }
+
+    private int getTaskProgress() {
+        return getNumberOfCompletedTasks() / totalTasks;
+    }
+
+    private boolean areAllTasksDone() {
+        return getNumberOfCompletedTasks() == totalTasks;
     }
 }

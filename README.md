@@ -33,10 +33,12 @@ java -jar iu.swithana.mapreduce.sample.wordCount.jar
 ### Todo
 - iterative Map Reduce
 - Add support for stragglers
+- The submit job performs as an blockingRMI call. Need to remove that. 
+
 
 #### Notes
 - partitioning does not copy the keys, it's a view on the actual keyset using Guava
-- ordered final result through treemap
+- ordered final result through tree map
 - The remote map operation is a blocking call. Should be changed to async call and get a call back once the
  Mapper has finished the task
  

@@ -55,9 +55,6 @@ public class Main {
 
             Thread masterThread = new Thread(master);
             masterThread.start();
-
-            // submit a test job
-            testJob(workerName, REGISTRY_PORT);
         } catch (RemoteException e) {
             logger.error("Error occurred while accessing the registry: "+ e.getMessage(), e);
         } catch (InterruptedException e) {
@@ -68,26 +65,6 @@ public class Main {
             logger.error("Error occurred while binding the master to the registry: "+ e.getMessage(), e);
         } catch (IOException e) {
             logger.error("Error accessing the configuration file: "+ e.getMessage(), e);
-        }
-    }
-
-    private static void testJob(String workerID, int port) {
-        if (workerID == "") {
-            System.out.println("The workerlist is empty!");
-        }
-        Registry  lookupRegistry;
-        try {
-            lookupRegistry = LocateRegistry.getRegistry(port);
-            WorkerRMI mapper = (WorkerRMI) lookupRegistry.lookup(workerID);
-            String result = mapper.getWorkerID();
-            logger.info("Invoked the worker!");
-            logger.info("Result: " + result);
-        } catch (AccessException e) {
-            logger.error("Error accessing the registry: " + e.getMessage(), e);
-        } catch (RemoteException e) {
-            logger.error("Error occurred while accessing the registry: "+ e.getMessage(), e);
-        } catch (NotBoundException e) {
-            logger.error("Error occurred while retrieving RPC bind: "+ e.getMessage(), e);
         }
     }
 

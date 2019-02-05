@@ -1,6 +1,6 @@
 package iu.swithana.systems.mapreduce;
 
-import iu.swithana.systems.mapreduce.client.WordCount;
+import iu.swithana.systems.mapreduce.client.InvertedIndex;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,8 +14,7 @@ import java.util.stream.Stream;
 /**
  * Before running this class, start a master and at least one worker.
  */
-public class WordCountTest extends WordCount {
-
+public class InvertedIndexTest extends InvertedIndex {
     @Before
     public void setup() {
         ClassLoader classLoader = getClass().getClassLoader();
@@ -24,8 +23,8 @@ public class WordCountTest extends WordCount {
     }
 
     @Test
-    public void testWordCountAccuracy() throws IOException {
-        String result = runWordCountProgram();
+    public void testInvertedIndexAccuracy() throws IOException {
+        String result = runInvertedIndexProgram();
         String resultFile = result.substring(result.indexOf("[") + 1, result.indexOf("]"));
         final String[] actual = new String[1];
         try (Stream<String> stream = Files.lines(Paths.get(resultFile))) {
@@ -36,7 +35,8 @@ public class WordCountTest extends WordCount {
                     }
             );
         }
-        Assert.assertEquals("48", actual[0]);
+        String expected = "Frankenstein.txt,A_tale_of_two_cities.txt,heart_of_darkness.txt," +
+                "THE-ADVENTURES-OF-SHERLOCK-HOLMES.txt,the_romane_of_lust.txt,Life-of-St-Francis-of-Assisi.txt";
+        Assert.assertEquals(expected, actual[0]);
     }
-
 }

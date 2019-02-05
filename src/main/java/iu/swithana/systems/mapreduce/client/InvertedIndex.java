@@ -30,7 +30,13 @@ public class InvertedIndex {
     private static String OUTPUT_DIR;
 
     public static void main(String[] args) {
+        runInvertedIndexProgram();
+    }
+
+    // taken this out of the main method to be able to test in the test cases
+    protected static String runInvertedIndexProgram() {
         Registry lookupRegistry;
+        String result = "";
         try {
             // loading the configs
             Config config = new Config();
@@ -43,7 +49,7 @@ public class InvertedIndex {
             lookupRegistry = LocateRegistry.getRegistry(REGISTRY_PORT);
             MapRedRMI mapper = (MapRedRMI) lookupRegistry.lookup(MASTER_BIND);
             logger.info("Invoking the MapReduce Job!");
-            String result = mapper.submitJob(InvertedIndexMapper.class, InvertedIndexReducer.class, INPUT_DIR, OUTPUT_DIR);
+            result = mapper.submitJob(InvertedIndexMapper.class, InvertedIndexReducer.class, INPUT_DIR, OUTPUT_DIR);
             logger.info("Result: " + result);
         } catch (AccessException e) {
             logger.error("Error accessing the registry: " + e.getMessage(), e);
@@ -54,6 +60,7 @@ public class InvertedIndex {
         } catch (IOException e) {
             logger.error("Error accessing the configuration file: "+ e.getMessage(), e);
         }
+        return result;
     }
 
     public static class InvertedIndexMapper implements Mapper {

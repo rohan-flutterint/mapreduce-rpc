@@ -5,7 +5,7 @@ import iu.swithana.systems.mapreduce.common.ResultMap;
 import java.io.File;
 
 public interface MapResultListener {
-    void onResult(ResultMap resultMap, String workerID);
+    void onResult(ResultMap resultMap, String workerID, File file);
 
     void onError(Exception e, String workerID, File file);
 }
