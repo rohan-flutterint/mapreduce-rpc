@@ -36,7 +36,7 @@ java -jar iu.swithana.mapreduce.master.jar
 
 With the config file, 
 ```
-java -jar iu.swithana.mapreduce.master.jar  -Dconfig.file=<config.properties>
+java -Dconfig.file=<config.properties_location> -jar iu.swithana.mapreduce.master.jar
 ```
 
 ##### Run Workers

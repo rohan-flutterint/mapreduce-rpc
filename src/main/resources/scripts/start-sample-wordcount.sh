@@ -10,7 +10,7 @@ then
     echo "Word Count is running, pid is $wordcountid"
 else
     echo "Starting the Word Count Sample"
-    java -jar $JAR_LOCATION/iu.swithana.mapreduce.sample.wordCount.jar -Dconfig.file=$CONFIG_LOCATION >> $LOGS_LOCATION/sample_wordcount.log &
+    java -Dconfig.file=$CONFIG_LOCATION -jar $JAR_LOCATION/iu.swithana.mapreduce.sample.wordCount.jar >> $LOGS_LOCATION/sample_wordcount.log &
     wordcountid=$(pgrep -f iu.swithana.mapreduce.sample.wordCount.jar)
     echo "Started the Wordcount application with pid: $wordcountid"
 fi

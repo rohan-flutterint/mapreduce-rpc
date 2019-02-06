@@ -15,7 +15,7 @@ then
     echo "Master is running, pid is $masterpid"
 else
     echo "Starting the master"
-    java -jar $JAR_LOCATION/iu.swithana.mapreduce.master.jar -Dconfig.file=$CONFIG_LOCATION >> $LOG_LOCATION/master.log &
+    java -Dconfig.file=$CONFIG_LOCATION -jar $JAR_LOCATION/iu.swithana.mapreduce.master.jar >> $LOG_LOCATION/master.log &
     masterpid=$(pgrep -f iu.swithana.mapreduce.master.jar)
     echo "Started Master with pid: $masterpid"
 fi
@@ -25,6 +25,6 @@ sleep 2
 COUNTER=0
 while [[  $COUNTER -lt $1 ]]; do
     echo "Starting the worker $COUNTER"
-    java -jar $JAR_LOCATION/iu.swithana.mapreduce.worker.jar -Dconfig.file=$CONFIG_LOCATION >> $LOG_LOCATION/worker_$COUNTER.log &
+    java -Dconfig.file=$CONFIG_LOCATION -jar $JAR_LOCATION/iu.swithana.mapreduce.worker.jar >> $LOG_LOCATION/worker_$COUNTER.log &
     let COUNTER=COUNTER+1
 done
