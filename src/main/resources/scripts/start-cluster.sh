@@ -28,6 +28,3 @@ while [[  $COUNTER -lt $1 ]]; do
     java -jar $JAR_LOCATION/iu.swithana.mapreduce.worker.jar -Dconfig.file=$CONFIG_LOCATION >> $LOG_LOCATION/worker_$COUNTER.log &
     let COUNTER=COUNTER+1
 done
-
-
-

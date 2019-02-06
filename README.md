@@ -1,6 +1,6 @@
 ### Pre-requisites
 - Java 8
-- Maven 3
+- Maven 3.3.x
 
 ### How to run
 - Run ```mvn clean install ``` on the root source directory
