@@ -7,6 +7,10 @@
     <groupId>iu.swithana</groupId>
     <artifactId>systems.mapreduce</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <properties>
+        <binary.location>${basedir}/bin</binary.location>
+        <final.jar.location>${binary.location}/lib</final.jar.location>
+    </properties>
     <build>
         <plugins>
             <plugin>
@@ -42,7 +46,7 @@
                                     <mainClass>iu.swithana.systems.mapreduce.master.Main</mainClass>
                                 </transformer>
                             </transformers>
-                            <finalName>iu.swithana.mapreduce.master</finalName>
+                            <outputFile>${final.jar.location}/iu.swithana.mapreduce.master.jar</outputFile>
                         </configuration>
                     </execution>
                     <execution>
@@ -57,7 +61,7 @@
                                     <mainClass>iu.swithana.systems.mapreduce.worker.Main</mainClass>
                                 </transformer>
                             </transformers>
-                            <finalName>iu.swithana.mapreduce.worker</finalName>
+                            <outputFile>${final.jar.location}/iu.swithana.mapreduce.worker.jar</outputFile>
                         </configuration>
                     </execution>
                     <execution>
@@ -72,7 +76,7 @@
                                     <mainClass>iu.swithana.systems.mapreduce.client.WordCount</mainClass>
                                 </transformer>
                             </transformers>
-                            <finalName>iu.swithana.mapreduce.sample.wordCount</finalName>
+                            <outputFile>${final.jar.location}/iu.swithana.mapreduce.sample.wordCount.jar</outputFile>
                         </configuration>
                     </execution>
                     <execution>
@@ -87,7 +91,52 @@
                                     <mainClass>iu.swithana.systems.mapreduce.client.InvertedIndex</mainClass>
                                 </transformer>
                             </transformers>
-                            <finalName>iu.swithana.mapreduce.sample.invertedIndex</finalName>
+                            <outputFile>${final.jar.location}/iu.swithana.mapreduce.sample.invertedIndex.jar</outputFile>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-config</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${binary.location}/config</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/src/main/resources</directory>
+                                    <includes>
+                                        <include>config.properties</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-scripts</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${binary.location}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/src/main/resources/scripts</directory>
+                                    <includes>
+                                        <include>start-cluster.sh</include>
+                                        <include>stop-cluster.sh</include>
+                                        <include>start-sample-wordcount.sh</include>
+                                        <include>start-sample-invertedIndex.sh</include>
+                                    </includes>
+                                </resource>
+                            </resources>
                         </configuration>
                     </execution>
                 </executions>

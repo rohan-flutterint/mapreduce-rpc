@@ -112,7 +112,7 @@ public class Master extends UnicastRemoteObject implements MasterRMI, Runnable, 
         // update the list with the workers
         int registerWorkers = registerWorkers();
         // create jobID
-        String dateID = new SimpleDateFormat("yyyyMMddHHmm'.txt'").format(new Date());
+        String dateID = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
         String outputFilePath = outputDirectory + File.separator + "app_" + dateID + File.separator + "output";
 
         // no registered workers available
