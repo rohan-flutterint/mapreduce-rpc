@@ -1,6 +1,6 @@
 #!/bin/sh
 JAR_LOCATION=./lib
-CONFIG_LOCATION=../src/main/resources/config.properties
+CONFIG_LOCATION=./config/config.properties
 LOG_LOCATION=./logs
 
 mkdir -p $LOG_LOCATION
