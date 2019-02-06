@@ -4,6 +4,12 @@ CONFIG_LOCATION=../src/main/resources/config.properties
 LOG_LOCATION=./logs
 
 mkdir -p $LOG_LOCATION
+
+if [[ $# -eq 0 ]] ; then
+    echo 'Please specify the number of worker nodes required as the first parameter!'
+    exit 1
+fi
+
 if masterpid=$(pgrep -f iu.swithana.mapreduce.master.jar)
 then
     echo "Master is running, pid is $masterpid"
