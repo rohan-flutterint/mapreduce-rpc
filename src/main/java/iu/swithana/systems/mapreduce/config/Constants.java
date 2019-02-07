@@ -10,4 +10,8 @@ public class Constants {
     public static final String HEARTBEAT_TIMEOUT = "HEARTBEAT_TIMEOUT";
     public static final String RMI_MASTER = "RMI_MASTER";
     public static final String REDUCER_PARTITIONS_KEY_SIZE = "REDUCER_PARTITIONS_KEY_SIZE";
+
+
+    public static final String NO_ITERATIONS = "NO_ITERATIONS";
+    public static final String CONVERGE_THRESHOLD = "CONVERGE_THRESHOLD";
 }

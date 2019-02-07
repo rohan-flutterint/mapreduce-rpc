@@ -94,6 +94,21 @@
                             <outputFile>${final.jar.location}/iu.swithana.mapreduce.sample.invertedIndex.jar</outputFile>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>client-3</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>iu.swithana.systems.mapreduce.client.IterativeWordCount</mainClass>
+                                </transformer>
+                            </transformers>
+                            <outputFile>${final.jar.location}/iu.swithana.mapreduce.sample.iterativeWordCount.jar</outputFile>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
