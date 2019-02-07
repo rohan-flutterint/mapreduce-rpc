@@ -149,6 +149,7 @@
                                         <include>stop-cluster.sh</include>
                                         <include>start-sample-wordcount.sh</include>
                                         <include>start-sample-invertedIndex.sh</include>
+                                        <include>start-sample-iterativeWordCount.sh</include>
                                     </includes>
                                 </resource>
                             </resources>

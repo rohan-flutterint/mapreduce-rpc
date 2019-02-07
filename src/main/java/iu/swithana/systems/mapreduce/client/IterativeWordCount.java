@@ -50,6 +50,7 @@ public class IterativeWordCount {
         // start of iterations
         String result = "";
         for (int i = 0; i < NO_ITERATIONS; i++) {
+            logger.info("Iteration : " + i);
             result = runIterativeWordCountProgram();
             if (testConvergence(result, "pride=", CONVERGE_THRESHOLD)) {
                 logger.info("Threshold reached, hence stopping the iterations");
@@ -59,7 +60,7 @@ public class IterativeWordCount {
                 logger.info(" \"Maximum number of iterations reached.");
                 break;
             }
-            copyResults(result, INPUT_DIR);
+            copyResults(result, INPUT_DIR, i);
         }
         logger.info("Final Result is: " + result);
     }
@@ -107,9 +108,9 @@ public class IterativeWordCount {
         }
     }
 
-    private static void copyResults(String result, String inputDir) throws IOException {
+    private static void copyResults(String result, String inputDir, int iterationNumber) throws IOException {
         File resultFile = getResultsFile(result);
-        Files.copy(resultFile.toPath(), Paths.get(inputDir + File.separator + resultFile.getName()),
+        Files.copy(resultFile.toPath(), Paths.get(inputDir + File.separator + resultFile.getName() + iterationNumber),
                 StandardCopyOption.REPLACE_EXISTING);
     }
 
