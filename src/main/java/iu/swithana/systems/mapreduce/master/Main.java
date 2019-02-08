@@ -23,6 +23,8 @@ public class Main {
     private static int REDUCER_PARTITIONS_KEY_SIZE;
     private static String REGISTRY_HOST;
     private static String RMI_MASTER;
+    private static String KEYVAL_STORE_HOST;
+    private static String KEYVAL_STORE_PORT;
 
     public static void main(String[] args) {
         try {
@@ -35,11 +37,15 @@ public class Main {
             RMI_MASTER = config.getConfig(Constants.RMI_MASTER);
             RMI_MASTER = config.getConfig(Constants.RMI_MASTER);
 
+            KEYVAL_STORE_HOST = config.getConfig(Constants.KEYVAL_STORE_HOST);
+            KEYVAL_STORE_PORT = config.getConfig(Constants.KEYVAL_STORE_PORT);
+
             // Start the registry
             startRegistry(REGISTRY_PORT);
 
             // Starting the master
-            Master master = new Master(REGISTRY_HOST, REGISTRY_PORT, HEARTBEAT_TIMEOUT, REDUCER_PARTITIONS_KEY_SIZE);
+            Master master = new Master(REGISTRY_HOST, REGISTRY_PORT, HEARTBEAT_TIMEOUT, REDUCER_PARTITIONS_KEY_SIZE,
+                    KEYVAL_STORE_HOST, KEYVAL_STORE_PORT);
             Naming.bind("//"+ REGISTRY_HOST + ":" + REGISTRY_PORT + "/" + RMI_MASTER, master);
             logger.info("Mapper bound");
             logger.info("Master ready to accept workers");

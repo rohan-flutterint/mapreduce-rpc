@@ -1,6 +1,8 @@
 package iu.swithana.systems.mapreduce.master.impl;
 
 import com.google.common.io.Files;
+import io.etcd.jetcd.Client;
+import io.etcd.jetcd.KV;
 import iu.swithana.systems.mapreduce.common.ResultMap;
 import iu.swithana.systems.mapreduce.master.MapRedRMI;
 import iu.swithana.systems.mapreduce.master.MasterRMI;
@@ -30,14 +32,18 @@ public class Master extends UnicastRemoteObject implements MasterRMI, Runnable, 
     private int heartbeatTimeout;
     private int partitionSize;
     private Hashtable<String, WorkerRMI> workerTable;
+    private KV kvClient;
 
-    public Master(String ip, int port, int heartbeatTimeout, int partitionSize) throws RemoteException {
+    public Master(String ip, int port, int heartbeatTimeout, int partitionSize, String storeHost, String storePort)
+            throws RemoteException {
         super();
         this.workers = new ArrayList();
         this.ip = ip;
         this.port = port;
         this.heartbeatTimeout = heartbeatTimeout;
         this.partitionSize = partitionSize;
+        Client client = Client.builder().endpoints("http://" + storeHost + ":" + storePort).build();
+        this.kvClient = client.getKVClient();
     }
 
     public String registerWorker(String ip, int port, String name) {
@@ -111,6 +117,11 @@ public class Master extends UnicastRemoteObject implements MasterRMI, Runnable, 
     public String submitJob(Class mapperClass, Class reducerClass, String inputDirectory, String outputDirectory) {
         // update the list with the workers
         int registerWorkers = registerWorkers();
+
+        // create a job ID and create the folder for the jobID in ETCD
+        String jobID = UUID.randomUUID().toString();
+        logger.info("Started Job for the job id: " + jobID);
+
         // create jobID
         String dateID = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
         String outputFilePath = outputDirectory + File.separator + "app_" + dateID + File.separator + "output";
@@ -120,10 +131,12 @@ public class Master extends UnicastRemoteObject implements MasterRMI, Runnable, 
             return "No workers are available. Please start a worker before submitting a mapreduce job";
         }
         // schedule the map job
-        MapExecutor mapExecutor = new MapExecutor(mapperClass, inputDirectory, workerTable);
+        MapExecutor mapExecutor = new MapExecutor(mapperClass, inputDirectory, workerTable, jobID);
         final Map<String, String> result;
         try {
             ResultMap resultMap = mapExecutor.runJob();
+
+            logger.info("Starting reduce tasks for the job: " + jobID);
             ReducerExecutor reducerExecutor = new ReducerExecutor(resultMap, workerTable, reducerClass, partitionSize);
             result = reducerExecutor.runJob();
 

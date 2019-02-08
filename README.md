@@ -1,11 +1,13 @@
 ### Pre-requisites
 - Java 8
 - Maven 3.3.x
+- ETCD (https://github.com/etcd-io/etcd)
 
 ### How to run
 - Run ```mvn clean install ``` on the root source directory
 - jar files for the master, worker and clients will be created in the ./bin/lib directory
 - change the configuration file (.bin/conf/config.properties) file as required (change the input and output directories)
+- Install and run ETCD Distributed key value store (https://github.com/etcd-io/etcd)
 
 #### Using the binaries
 You can run start and manage the setup using the given scripts in the ./bin directory. It provides the following scripts.

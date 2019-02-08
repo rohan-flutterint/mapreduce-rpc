@@ -17,15 +17,17 @@ public class MapperTask implements Runnable {
     private Class mapperClass;
     private String workerID;
     private MapResultListener mapResultListener;
+    private String jobID;
 
     public MapperTask(File file, WorkerRMI worker, Class mapperClass, FileManager fileManager, String workerID,
-                      MapResultListener mapResultListener) {
+                      String jobID, MapResultListener mapResultListener) {
         this.file = file;
         this.worker = worker;
         this.fileManager = fileManager;
         this.mapperClass = mapperClass;
         this.workerID = workerID;
         this.mapResultListener = mapResultListener;
+        this.jobID = jobID;
     }
 
     @Override
@@ -33,10 +35,9 @@ public class MapperTask implements Runnable {
         try {
             JobContext jobContext = new JobContext();
             jobContext.addConfig("filename", file.getName());
+            jobContext.addConfig("jobid", jobID);
             ResultMap resultMap = worker.doMap(fileManager.readFile(this.file), mapperClass, jobContext);
             mapResultListener.onResult(resultMap, workerID, file);
-        } catch (IOException e) {
-            logger.error("Error accessing the file: " + file.getName() + " " + e.getMessage(), e);
         } catch (Exception e) {
             logger.error("Exception occurred in completing the job on worker: " + this.workerID + " " + e.getMessage(), e);
             mapResultListener.onError(e, workerID, file);

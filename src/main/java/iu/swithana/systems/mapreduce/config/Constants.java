@@ -10,8 +10,12 @@ public class Constants {
     public static final String HEARTBEAT_TIMEOUT = "HEARTBEAT_TIMEOUT";
     public static final String RMI_MASTER = "RMI_MASTER";
     public static final String REDUCER_PARTITIONS_KEY_SIZE = "REDUCER_PARTITIONS_KEY_SIZE";
+    public static final String PARTITION_NUMBER = "PARTITION_NUMBER";
 
 
     public static final String NO_ITERATIONS = "NO_ITERATIONS";
     public static final String CONVERGE_THRESHOLD = "CONVERGE_THRESHOLD";
+
+    public static final String KEYVAL_STORE_HOST = "KEYVAL_STORE_HOST";
+    public static final String KEYVAL_STORE_PORT = "KEYVAL_STORE_PORT";
 }

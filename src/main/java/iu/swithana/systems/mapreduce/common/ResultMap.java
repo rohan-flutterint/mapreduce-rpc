@@ -6,10 +6,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.TreeMultimap;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class ResultMap implements Serializable {
     private Multimap<String, String> map;
@@ -62,5 +59,17 @@ public class ResultMap implements Serializable {
 
     private void putAll(String key, Iterable<String> values) {
         this.map.putAll(key, values);
+    }
+
+    public Map<String, String> getResultAsStringList() {
+        Map<String, String> result = new HashMap<>();
+        for (String key : map.keySet()) {
+            result.put(key, getValueAsString(key));
+        }
+        return result;
+    }
+
+    private String getValueAsString(String key) {
+        return map.get(key).toString().replaceAll("\\{", "").replaceAll("\\}", "");
     }
 }
