@@ -55,9 +55,6 @@ java -jar iu.swithana.mapreduce.sample.wordCount.jar
 ```
 
 ### Todo
-- script to start a cluster
-- iterative Map Reduce
-- Add support for stragglers
 - The submit job performs as an blockingRMI call. Need to remove that. 
 
 
