@@ -30,13 +30,13 @@ public class WordCountTest extends WordCount {
         final String[] actual = new String[1];
         try (Stream<String> stream = Files.lines(Paths.get(resultFile))) {
             stream.forEach(line -> {
-                        if(line.startsWith("pride=")) {
+                        if(line.startsWith("Farmer=")) {
                             actual[0] = line.substring(line.indexOf("=") + 1);
                         }
                     }
             );
         }
-        Assert.assertEquals("48", actual[0]);
+        Assert.assertEquals("3", actual[0]);
     }
 
 }
