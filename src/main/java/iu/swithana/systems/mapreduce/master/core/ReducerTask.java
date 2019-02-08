@@ -10,30 +10,32 @@ import java.util.Map;
 public class ReducerTask implements Runnable {
     private static Logger logger = LoggerFactory.getLogger(ReducerTask.class);
 
-    private ResultMap subMap;
+    private String partition;
+    private String jobID;
     private Class reducerClass;
     private WorkerRMI worker;
     private String workerID;
     private ReducerResultListener reducerResultListener;
 
-    public ReducerTask(ResultMap subMap, Class reducerClass, WorkerRMI worker, String workerID,
+    public ReducerTask(String partition, Class reducerClass, WorkerRMI worker, String workerID, String jobID,
                        ReducerResultListener reducerResultListener) {
-        this.subMap = subMap;
         this.reducerClass = reducerClass;
         this.worker = worker;
         this.workerID = workerID;
         this.reducerResultListener = reducerResultListener;
+        this.partition = partition;
+        this.jobID = jobID;
     }
 
     @Override
     public void run() {
         try {
-            Map<String, String> resultMap = worker.doReduce(subMap, reducerClass);
+            Map<String, String> resultMap = worker.doReduce(partition, jobID, reducerClass);
             reducerResultListener.onResult(resultMap, workerID);
         } catch (Exception e) {
             logger.error("Exception occurred in completing the reducer the job on worker: " + this.workerID + " " +
                     e.getMessage(), e);
-            reducerResultListener.onError(e, workerID, subMap.getKeys());
+            reducerResultListener.onError(e, workerID, partition);
         }
     }
 }

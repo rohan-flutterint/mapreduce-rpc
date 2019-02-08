@@ -17,6 +17,9 @@ You can run start and manage the setup using the given scripts in the ./bin dire
 Samples:
 - start-sample-wordcount.sh
 - start-sample-invertedIndex.sh
+- start-sample-iterativeWordCount.sh
+
+Please note that since the iterative sample runs through multiple iterations, it would take relatively long time to complete. 
 
 For example, you can start the cluster with ```n``` number of workers, 
 ```
@@ -53,16 +56,4 @@ java -jar iu.swithana.mapreduce.worker.jar
 ```
 java -jar iu.swithana.mapreduce.sample.wordCount.jar
 ```
-
-### Todo
-- The submit job performs as an blockingRMI call. Need to remove that. 
-
-
-
-#### Notes
-- partitioning does not copy the keys, it's a view on the actual keyset using Guava
-- ordered final result through tree map
-- The remote map operation is a blocking call. Should be changed to async call and get a call back once the
- Mapper has finished the task
-- support for stragglers: mappers only
  

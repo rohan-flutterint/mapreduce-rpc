@@ -40,15 +40,13 @@ public class MapExecutor {
         this.jobID = jobID;
     }
 
-    public ResultMap runJob() {
+    public void runJob() {
         // prepare the input files list into the queue
         FileManager fileManager = new FileManager();
         List<File> filesInDirectory = fileManager.getFilesInDirectory(inputDirectory);
         fileQueue = new ArrayBlockingQueue<>(filesInDirectory.size());
         fileQueue.addAll(filesInDirectory);
         totalTasks = fileQueue.size();
-
-        final MapResultsHandler mapResultsHandler = new MapResultsHandler();
 
         // add all the workers to the idle queue
         for (String workerID : workerTable.keySet()) {
@@ -122,7 +120,6 @@ public class MapExecutor {
         } catch (Exception e) {
             logger.error("Error accessing the mapper function: " + e.getMessage(), e);
         }
-        return mapResultsHandler.getResultsList();
     }
 
     synchronized private void addCompletedTask(File file) {

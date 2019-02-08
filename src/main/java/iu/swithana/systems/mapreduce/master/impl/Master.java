@@ -30,20 +30,17 @@ public class Master extends UnicastRemoteObject implements MasterRMI, Runnable, 
     private String ip;
     private int port;
     private int heartbeatTimeout;
-    private int partitionSize;
+    private int partitions;
     private Hashtable<String, WorkerRMI> workerTable;
-    private KV kvClient;
 
-    public Master(String ip, int port, int heartbeatTimeout, int partitionSize, String storeHost, String storePort)
+    public Master(String ip, int port, int heartbeatTimeout, int partitions, String storeHost, String storePort)
             throws RemoteException {
         super();
         this.workers = new ArrayList();
         this.ip = ip;
         this.port = port;
         this.heartbeatTimeout = heartbeatTimeout;
-        this.partitionSize = partitionSize;
-        Client client = Client.builder().endpoints("http://" + storeHost + ":" + storePort).build();
-        this.kvClient = client.getKVClient();
+        this.partitions = partitions;
     }
 
     public String registerWorker(String ip, int port, String name) {
@@ -134,10 +131,13 @@ public class Master extends UnicastRemoteObject implements MasterRMI, Runnable, 
         MapExecutor mapExecutor = new MapExecutor(mapperClass, inputDirectory, workerTable, jobID);
         final Map<String, String> result;
         try {
-            ResultMap resultMap = mapExecutor.runJob();
+            logger.info("Starting Mapper tasks for the job: " + jobID);
+            // run the map tasks
+            mapExecutor.runJob();
 
+            // Start reduce tasks
             logger.info("Starting reduce tasks for the job: " + jobID);
-            ReducerExecutor reducerExecutor = new ReducerExecutor(resultMap, workerTable, reducerClass, partitionSize);
+            ReducerExecutor reducerExecutor = new ReducerExecutor(workerTable, reducerClass, partitions, jobID);
             result = reducerExecutor.runJob();
 
             // create output directory and write the file

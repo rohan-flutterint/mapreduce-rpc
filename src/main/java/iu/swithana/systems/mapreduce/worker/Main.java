@@ -44,7 +44,7 @@ public class Main {
             String workerID = master.registerWorker(REGISTRY_HOST, REGISTRY_PORT, "worker");
             logger.info("Registered the worker with the master, received the id: " + workerID);
 
-            Client client = Client.builder().endpoints("http://localhost:2379").build();
+            Client client = Client.builder().endpoints("http://" + KEYVAL_STORE_HOST + ":" + KEYVAL_STORE_PORT).build();
             KV kvClient = client.getKVClient();
 
             logger.info("Binding the worker with the registry " + workerID);

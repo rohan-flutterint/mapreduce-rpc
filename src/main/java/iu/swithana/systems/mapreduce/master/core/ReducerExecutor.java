@@ -12,24 +12,24 @@ import java.util.concurrent.*;
 public class ReducerExecutor {
     private static Logger logger = LoggerFactory.getLogger(ReducerExecutor.class);
 
-    private ResultMap resultMap;
     private Hashtable<String, WorkerRMI> workerTable;
     private BlockingQueue<String> idleWorkers;
-    private Map<String, ResultMap> inProgressWorkers;
-    private BlockingQueue<List<String>> partitionQueue;
+    private Map<String, String> inProgressWorkers;
+    private BlockingQueue<String> partitionQueue;
     private int numbeOfWorkers, partitionSize;
     private Class reducerClass;
+    private String jobID;
 
-    public ReducerExecutor(ResultMap resultMap, Hashtable<String, WorkerRMI> workerTable, Class reducerClass,
-                           int partitionSize) {
-        this.resultMap = resultMap;
+    public ReducerExecutor(Hashtable<String, WorkerRMI> workerTable, Class reducerClass,
+                           int partitions, String jobID) {
         this.workerTable = workerTable;
         this.numbeOfWorkers = workerTable.keySet().size();
         this.reducerClass = reducerClass;
         this.idleWorkers = new ArrayBlockingQueue<>(workerTable.keySet().size());
-        this.partitionQueue = new ArrayBlockingQueue((resultMap.getKeys().size()/partitionSize) + partitionSize);
-        this.partitionSize = partitionSize;
+        this.partitionQueue = new ArrayBlockingQueue(partitions);
+        this.partitionSize = partitions;
         this.inProgressWorkers = new Hashtable<>();
+        this.jobID = jobID;
     }
 
     public Map<String, String> runJob() {
@@ -39,10 +39,10 @@ public class ReducerExecutor {
             idleWorkers.add(workerID);
         }
 
-        // partition the key set
-        Set<String> keyList = resultMap.getKeys();
-        Iterator<List<String>> partitions = Iterables.partition(keyList, partitionSize).iterator();
-        partitions.forEachRemaining(partition-> partitionQueue.add(partition));
+        // add partition ids to the partition queue
+        for (int i = 0; i < partitionSize; i++) {
+            partitionQueue.add(String.valueOf(i));
+        }
 
         // run the thread pool, each per worker
         try {
@@ -65,15 +65,15 @@ public class ReducerExecutor {
                 }
 
                 // blocks on the data queue, for fault tolerance
-                List<String> partition = partitionQueue.take();
+                String partition = partitionQueue.take();
 
                 // blocks on the idle queue, waits for an available worker
                 final String workerID = idleWorkers.take();
                 WorkerRMI worker = workerTable.get(workerID);
-                logger.debug("Submitting key set: " + partition + " to worker: " + workerID);
-                ResultMap subMap = resultMap.getSubMap(partition);
-                inProgressWorkers.put(workerID, subMap);
-                executor.submit(new ReducerTask(subMap, reducerClass, worker, workerID,
+                logger.info("Submitting partition: " + partition + " to worker: " + workerID);
+
+                inProgressWorkers.put(workerID, partition);
+                executor.submit(new ReducerTask(partition, reducerClass, worker, workerID, jobID,
                         new ReducerResultListener() {
                             @Override
                             public void onResult(Map<String, String> result, String workerID) {
@@ -82,11 +82,11 @@ public class ReducerExecutor {
                                 idleWorkers.add(workerID);
                             }
                             @Override
-                            public void onError(Exception e, String workerID, Set<String> keyset) {
+                            public void onError(Exception e, String workerID, String partition) {
                                 logger.error("Error accessing Worker: " + workerID +
                                         ". Assuming it's inaccessible and dropping the worker. " + e.getMessage(), e);
-                                logger.info("Resubmitting the task to the task queue");
-                                partitionQueue.add(new ArrayList<>(keyset));
+                                logger.info("Resubmitting the task to the task queue for partition: " + partition);
+                                partitionQueue.add(partition);
                                 inProgressWorkers.remove(workerID);
                             }
                         }));
