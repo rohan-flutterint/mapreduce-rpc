@@ -11,6 +11,7 @@
 You can download the binary release and run ./etcd and it would startup an ETCD server
 ex:
 ```wget https://github.com/etcd-io/etcd/releases/download/v3.3.12/etcd-v3.3.12-linux-amd64.tar.gz```
+then unzip the tar and run ```<unzip_location>/etcd``` and this would start the etcd server
 
 #### Using the binaries
 You can run start and manage the setup using the given scripts in the ./bin directory. It provides the following scripts.
