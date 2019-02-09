@@ -3,7 +3,6 @@ package iu.swithana.systems.mapreduce.master;
 import iu.swithana.systems.mapreduce.config.Config;
 import iu.swithana.systems.mapreduce.config.Constants;
 import iu.swithana.systems.mapreduce.master.impl.Master;
-import iu.swithana.systems.mapreduce.worker.WorkerRMI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,26 +19,32 @@ public class Main {
 
     private static int REGISTRY_PORT;
     private static int HEARTBEAT_TIMEOUT;
-    private static int REDUCER_PARTITIONS_KEY_SIZE;
+    private static int PARTITION_NUMBER;
     private static String REGISTRY_HOST;
     private static String RMI_MASTER;
+    private static String KEYVAL_STORE_HOST;
+    private static String KEYVAL_STORE_PORT;
 
     public static void main(String[] args) {
         try {
             // loading the configs
             Config config = new Config();
             REGISTRY_PORT = Integer.parseInt(config.getConfig(Constants.RMI_REGISTRY_PORT));
-            REDUCER_PARTITIONS_KEY_SIZE = Integer.parseInt(config.getConfig(Constants.REDUCER_PARTITIONS_KEY_SIZE));
+            PARTITION_NUMBER = Integer.parseInt(config.getConfig(Constants.PARTITION_NUMBER));
             REGISTRY_HOST = config.getConfig(Constants.RMI_REGISTRY_HOST);
             HEARTBEAT_TIMEOUT = Integer.parseInt(config.getConfig(Constants.HEARTBEAT_TIMEOUT));
             RMI_MASTER = config.getConfig(Constants.RMI_MASTER);
             RMI_MASTER = config.getConfig(Constants.RMI_MASTER);
 
+            KEYVAL_STORE_HOST = config.getConfig(Constants.KEYVAL_STORE_HOST);
+            KEYVAL_STORE_PORT = config.getConfig(Constants.KEYVAL_STORE_PORT);
+
             // Start the registry
             startRegistry(REGISTRY_PORT);
 
             // Starting the master
-            Master master = new Master(REGISTRY_HOST, REGISTRY_PORT, HEARTBEAT_TIMEOUT, REDUCER_PARTITIONS_KEY_SIZE);
+            Master master = new Master(REGISTRY_HOST, REGISTRY_PORT, HEARTBEAT_TIMEOUT, PARTITION_NUMBER,
+                    KEYVAL_STORE_HOST, KEYVAL_STORE_PORT);
             Naming.bind("//"+ REGISTRY_HOST + ":" + REGISTRY_PORT + "/" + RMI_MASTER, master);
             logger.info("Mapper bound");
             logger.info("Master ready to accept workers");

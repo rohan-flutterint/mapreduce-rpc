@@ -29,14 +29,13 @@ public class InvertedIndexTest extends InvertedIndex {
         final String[] actual = new String[1];
         try (Stream<String> stream = Files.lines(Paths.get(resultFile))) {
             stream.forEach(line -> {
-                        if(line.startsWith("pride=")) {
+                        if(line.startsWith("arm=")) {
                             actual[0] = line.substring(line.indexOf("=") + 1);
                         }
                     }
             );
         }
-        String expected = "Frankenstein.txt,A_tale_of_two_cities.txt,heart_of_darkness.txt," +
-                "THE-ADVENTURES-OF-SHERLOCK-HOLMES.txt,the_romane_of_lust.txt,Life-of-St-Francis-of-Assisi.txt";
+        String expected = "A_tale_of_two_cities.txt,the_romane_of_lust.txt";
         Assert.assertEquals(expected, actual[0]);
     }
 }

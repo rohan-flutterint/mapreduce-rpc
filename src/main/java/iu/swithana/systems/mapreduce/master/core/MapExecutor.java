@@ -26,8 +26,9 @@ public class MapExecutor {
     private Set<File> completedTasks;
     private Set<File> inProgressTasks;
     private int totalTasks;
+    private String jobID;
 
-    public MapExecutor(Class mapperClass, String inputDirectory, Hashtable<String, WorkerRMI> workerTable) {
+    public MapExecutor(Class mapperClass, String inputDirectory, Hashtable<String, WorkerRMI> workerTable, String jobID) {
         this.workerTable = workerTable;
         this.mapperClass = mapperClass;
         this.inputDirectory = inputDirectory;
@@ -36,17 +37,16 @@ public class MapExecutor {
         this.inProgressWorkers = new Hashtable<>();
         this.completedTasks = Collections.synchronizedSet(new HashSet<>());
         this.inProgressTasks = Collections.synchronizedSet(new HashSet<>());
+        this.jobID = jobID;
     }
 
-    public ResultMap runJob() {
+    public void runJob() {
         // prepare the input files list into the queue
         FileManager fileManager = new FileManager();
         List<File> filesInDirectory = fileManager.getFilesInDirectory(inputDirectory);
         fileQueue = new ArrayBlockingQueue<>(filesInDirectory.size());
         fileQueue.addAll(filesInDirectory);
         totalTasks = fileQueue.size();
-
-        final MapResultsHandler mapResultsHandler = new MapResultsHandler();
 
         // add all the workers to the idle queue
         for (String workerID : workerTable.keySet()) {
@@ -87,15 +87,14 @@ public class MapExecutor {
                     // blocks on the idle queue, waits for an available worker
                     final String workerID = idleWorkers.take();
                     WorkerRMI worker = workerTable.get(workerID);
-                    logger.debug("Submitting file " + file.getName() + " to worker: " + workerID);
+                    logger.info("Submitting file " + file.getName() + " to worker: " + workerID);
                     inProgressWorkers.put(workerID, file.getName());
                     addInProgressTask(file);
-                    executor.submit(new MapperTask(file, worker, mapperClass, fileManager, workerID,
+                    executor.submit(new MapperTask(file, worker, mapperClass, fileManager, workerID, jobID,
                             new MapResultListener() {
                                 // in case of successful execution, save the result
                                 @Override
                                 public void onResult(ResultMap resultMap, String workerID, File file) {
-                                    mapResultsHandler.addResult(resultMap);
                                     inProgressWorkers.remove(workerID);
                                     idleWorkers.add(workerID);
                                     addCompletedTask(file);
@@ -121,7 +120,6 @@ public class MapExecutor {
         } catch (Exception e) {
             logger.error("Error accessing the mapper function: " + e.getMessage(), e);
         }
-        return mapResultsHandler.getResultsList();
     }
 
     synchronized private void addCompletedTask(File file) {

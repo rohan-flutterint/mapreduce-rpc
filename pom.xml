@@ -196,5 +196,12 @@
             <version>4.12</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- Distributed key value store: ETCD -->
+        <dependency>
+            <groupId>io.etcd</groupId>
+            <artifactId>jetcd-core</artifactId>
+            <version>0.3.0</version>
+        </dependency>
     </dependencies>
 </project>

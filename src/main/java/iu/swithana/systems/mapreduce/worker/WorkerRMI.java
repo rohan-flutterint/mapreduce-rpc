@@ -16,5 +16,5 @@ public interface WorkerRMI extends Remote {
 
     ResultMap doMap(byte[] content, Class mapperClass, JobContext configs) throws RemoteException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException;
 
-    Map<String, String> doReduce(ResultMap resultMap, Class reducerClass) throws RemoteException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException;
+    Map<String, String> doReduce(String partition, String jobID, Class reducerClass) throws RemoteException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException;
 }
